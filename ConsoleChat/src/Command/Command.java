@@ -38,7 +38,10 @@ public abstract class Command {
 		if(!scmd[0].equals("commands")){
 			boolean ran = false;
 			for(Command c : cmdlist){
-				if(c!=null)c.execute(scmd);
+				if(c!=null){
+					c.execute(scmd);
+					ran = true;
+				}
 			}
 			if(!ran){
 				Logger.sendMessage(scmd[0] + " is an invalid command, do \'commands\' for a list of valid commands");
