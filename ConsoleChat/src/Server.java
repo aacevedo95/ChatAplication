@@ -49,13 +49,18 @@ public class Server {
 	}
 	
 	public static void stop(){
+		Logger.log("Stopping server...");
 		clientListener.interrupt();
 		clientListener = null;
 		try {
+			for(Client c : list){
+				if(c!=null)c.close();
+			}
 			ssocket.close();
 		} catch (IOException e) {
 			Logger.logError("Coudl not close server socket - " + e.getMessage());
 		}
+		Logger.log("Server stopped");
 	}
 	
 	public static void deleteClient(int index){
