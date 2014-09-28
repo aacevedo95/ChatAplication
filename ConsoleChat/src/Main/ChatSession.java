@@ -1,3 +1,4 @@
+package Main;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -26,7 +27,7 @@ public class ChatSession{
 						if((msg = dis.readUTF()) != null)System.out.println(msg);
 					}
 				} catch (IOException e) {
-					Logger.log("Disconnected from " + address.toString());
+					Logger.sendMessage("Disconnected from " + address.toString());
 					close();
 					closed = true;
 				}
