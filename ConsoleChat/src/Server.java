@@ -7,11 +7,12 @@ import java.net.Socket;
 public class Server {
 
 	static Thread clientListener;
-	static Thread chatListener;
 	static ServerSocket ssocket;
 	static Client[] list;
+	static boolean serverIsAlive = false;
 
 	public static void start(){
+		serverIsAlive = true;
 		Logger.log("Starting server...");
 		list = new Client[8];
 		try {
@@ -22,9 +23,8 @@ public class Server {
 		clientListener = new Thread(new Runnable(){
 			@Override
 			public void run() {
-				Socket client = null;
 				try {
-					client = ssocket.accept();
+					Socket client = ssocket.accept();
 					DataInputStream dis = new DataInputStream(client.getInputStream());
 					String username = dis.readUTF();
 					DataOutputStream dos = new DataOutputStream(client.getOutputStream());
@@ -32,9 +32,7 @@ public class Server {
 					Logger.log(client.getRemoteSocketAddress() + " connected with username " + username);
 					for(int x = 0; x < list.length; x++){
 						if(list[x] == null){
-							list[x] = new Client(client, username);
-							Thread t = new Thread(list[x], username + "LThread");
-							t.start();
+							list[x] = new Client(client, username, x);
 							Logger.log("Adding " + username + " at postition " + x);
 							chat(username + " has joined the chatroom", "Console");
 							break;
@@ -49,15 +47,32 @@ public class Server {
 		clientListener.start();
 		Logger.log("Server started successfuly");
 	}
+	
+	public static void stop(){
+		clientListener.interrupt();
+		clientListener = null;
+		try {
+			ssocket.close();
+		} catch (IOException e) {
+			Logger.logError("Coudl not close server socket - " + e.getMessage());
+		}
+	}
+	
+	public static void deleteClient(int index){
+		list[index].close();
+		list[index]=null;
+	}
 
 	public static void chat(String msg, String user){
 		for(Client r : list){
 			if(r != null){
-				try {
-					DataOutputStream dos = new DataOutputStream(r.getSocket().getOutputStream());
-					dos.writeUTF(user + ": " + msg);
-				} catch (IOException e) {
-					Logger.logError("Could not connect to output stream - " + e.getMessage());
+				if(!r.getUsername().equals(user)){
+					try {
+						DataOutputStream dos = new DataOutputStream(r.getSocket().getOutputStream());
+						dos.writeUTF(user + ": " + msg);
+					} catch (IOException e) {
+						Logger.logError("Could not connect to output stream - " + e.getMessage());
+					}
 				}
 			}
 		}

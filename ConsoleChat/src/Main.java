@@ -13,6 +13,7 @@ public class Main {
 		String in;
 		System.out.println("ConsoleChat V.0.0.5_14\t\tMade by Juan Alvarez");
 		while(true){
+			System.out.print('>');
 			if((in = kb.readLine()) != null){
 				String[] cmd = in.split(" ");
 				if(!command(cmd))System.out.println(cmd[0] + " is an invalid command, use \'commands\' for a list of commands.");
@@ -44,7 +45,7 @@ public class Main {
 				}
 			}else{
 				Logger.log("Correct command usage: \"connect {127.0.0.1} {username}\"");
-				System.out.println("You need more than one argument for this command");
+				Logger.log("You need more than one argument for this command");
 			}
 		}else if(cmd[0].equals("hostserver")){
 			Server.start();
@@ -53,7 +54,14 @@ public class Main {
 			System.exit(0);
 			return true;
 		}else if(cmd[0].equals("commands")){
-			System.out.println("connect {ip} {username}\nhostserver\nquit");
+			System.out.println("connect {ip} {username}\nhostserver\nstopserver\nquit");
+			return true;
+		}else if(cmd[0].equals("stopserver")){
+			if(Server.serverIsAlive){
+				Server.stop();
+				Logger.log("Server stopped");
+			}
+			else Logger.log("Server isn't alive");
 			return true;
 		}
 		return false;

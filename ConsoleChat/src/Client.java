@@ -6,18 +6,23 @@ public class Client implements Runnable{
 
 	private Socket socket;
 	private String username;
+	private Thread listener;
+	private int index;
 
 	private static int users = 0;
 
 	public Client(){
 		username = "USER"+users;
 		users++;
+		listener = new Thread(this, "UserThread-"+username);
+		listener.start();
 	}
 
-	public Client(Socket s, String u){
+	public Client(Socket s, String u, int i){
 		this();
 		socket = s;
 		username = u;
+		index = i;
 	}
 
 	public Socket getSocket(){
@@ -35,7 +40,23 @@ public class Client implements Runnable{
 	public void setUsername(String u){
 		username = u;
 	}
-
+	
+	public int getIndex(){
+		return index;
+	}
+	
+	public void setIntex(int i){
+		index = i;
+	}
+	
+	public void close(){
+		try {
+			socket.close();
+		} catch (IOException e) {
+			Logger.logError("Could not close client socket");
+		}
+	}
+	
 	@Override
 	public void run() {
 		try {
@@ -48,7 +69,10 @@ public class Client implements Runnable{
 				}
 			}
 		} catch (IOException e) {
-			Logger.logError("Client class, could not create listener for " + username + "- " + e.getMessage());
+			Logger.logInfo(username + " has disconnected");
+			Server.deleteClient(index);
+			Server.chat(username + " has disconnected", "Server");
+			users--;
 		}
 	}
 }
