@@ -27,7 +27,7 @@ public class Server {
 			clientListener = new Thread(new ClientListener(),"NewClientListener");
 			clientListener.start();
 		} catch (IOException e) {
-			Logger.logError("Could not create server - " + e.getMessage());
+			Logger.logError("Could not start server - " + e.getMessage());
 			serverIsAlive = false;
 		}
 		Logger.sendMessage("Server started successfuly");
@@ -96,7 +96,7 @@ public class Server {
 					}
 				}
 			} catch (IOException e) {
-				Logger.logError("Could not accept socket - " + e.getMessage());
+				Logger.logError("Could not connect to client - " + e.getMessage());
 			}
 			run();
 		}

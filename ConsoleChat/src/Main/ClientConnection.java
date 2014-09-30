@@ -70,7 +70,7 @@ public class ClientConnection implements Runnable{
 	
 	public void sendMessage(String msg){
 		try {
-			Logger.logInfo("msg -> " + username + ": " + msg);
+			Logger.logInfo("msg -> " + username + ": \'" + msg + '\'');
 			dos.writeUTF(msg);
 		} catch (IOException e) {
 			Logger.logError("Could not send message to " + username);
