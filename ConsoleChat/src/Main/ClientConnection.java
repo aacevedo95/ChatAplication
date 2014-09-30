@@ -1,29 +1,36 @@
 package Main;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Client implements Runnable{
+public class ClientConnection implements Runnable{
 
 	private Socket socket;
 	private String username;
 	private Thread listener;
 	private int index;
+	private DataOutputStream dos;
 
 	private static int users = 0;
 
-	public Client(){
+	public ClientConnection(){
 		username = "USER"+users;
 		users++;
 		listener = new Thread(this, "UserThread-"+username);
 		listener.start();
 	}
 
-	public Client(Socket s, String u, int i){
+	public ClientConnection(Socket s, String u, int i){
 		this();
 		socket = s;
 		username = u;
 		index = i;
+		try {
+			dos = new DataOutputStream(s.getOutputStream());
+		} catch (IOException e) {
+			Logger.logError("Coud not create output stream for " + u);
+		}
 	}
 
 	public Socket getSocket(){
@@ -52,9 +59,21 @@ public class Client implements Runnable{
 	
 	public void close(){
 		try {
+			dos.close();
+			listener.interrupt();
+			listener = null;
 			socket.close();
 		} catch (IOException e) {
 			Logger.logError("Could not close client socket");
+		}
+	}
+	
+	public void sendMessage(String msg){
+		try {
+			Logger.logInfo("msg -> " + username + ": " + msg);
+			dos.writeUTF(msg);
+		} catch (IOException e) {
+			Logger.logError("Could not send message to " + username);
 		}
 	}
 	
@@ -66,13 +85,13 @@ public class Client implements Runnable{
 				String msg;
 				if((msg = dis.readUTF()) != null){
 					Logger.logInfo(username + " said \'" + msg + "\'");
-					Server.chat(msg, username);
+					Server.analyzeMessage(msg, index);
 				}
 			}
 		} catch (IOException e) {
 			Logger.logInfo(username + " has disconnected");
 			Server.deleteClient(index);
-			Server.chat(username + " has disconnected", "Server");
+			Server.chatToAll(username + " has disconnected", -1);
 			users--;
 		}
 	}

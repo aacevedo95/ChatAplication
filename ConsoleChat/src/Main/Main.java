@@ -1,8 +1,8 @@
 package Main;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import Command.Command;
 
 public class Main {
@@ -16,7 +16,7 @@ public class Main {
 			System.out.print('>');
 			in = kb.readLine();
 			if(in != null){
-				Command.executeCommand(in);
+				Command.executeCommand(in.split(" "), -1);
 			}
 		}
 	}

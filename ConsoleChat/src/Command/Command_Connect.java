@@ -11,6 +11,7 @@ import Main.Logger;
 public class Command_Connect extends Command{
 
 	public Command_Connect() {
+		super();
 		command = "connect";
 		usage = new String(String.format("%s ip_address username", command)).split(" ");
 		description = "Connects to a remote chat server";
@@ -18,7 +19,7 @@ public class Command_Connect extends Command{
 	}
 
 	@Override
-	public boolean run(String[] cmd) {
+	public boolean run(String[] cmd, int i) {
 		try {
 			Socket socket = new Socket(cmd[1], 1337);
 			if(socket.isConnected()){

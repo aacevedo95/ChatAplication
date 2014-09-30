@@ -1,6 +1,7 @@
 package Command;
 
 import Main.Logger;
+import Main.Server;
 
 public abstract class Command {
 
@@ -8,24 +9,37 @@ public abstract class Command {
 	protected String command;
 	protected String description;
 	protected int arguments;
+	protected boolean scmd;
 
 	private static Command[] cmdlist;
 	private static int cmds;
 
 	public static void registerCommands(){
-		cmdlist = new Command[16];
+		cmdlist = new Command[4];
 		new Command_HostServer();
 		new Command_Connect();
 		new Command_Quit();
+		new Command_Online();
 		new Command_StopServer();
+		new Command_Message();
 		compressList();
 	}
 
 	private static void add(Command c){
+		if(cmdlist.length == cmds){
+			Logger.logInfo("Command list is full, rescaling from " + cmds + " to " + (cmds*2));
+			Command[] temp = new Command[cmds*2];
+			for(int x = 0; x < cmds; x++){
+				temp[x] = cmdlist[x];
+			}
+			cmdlist = temp;
+		}
 		cmdlist[cmds] = c;
+		cmds++;
 	}
 
 	private static void compressList(){
+		Logger.logInfo("Compressing list of commands");
 		Command[] list = new Command[cmds];
 		for(int x = 0; x < cmds; x++){
 			list[x] = cmdlist[x];
@@ -33,29 +47,31 @@ public abstract class Command {
 		cmdlist = list;
 	}
 
-	public static void executeCommand(String cmd){
-		String[] scmd = cmd.split(" ");
-		if(!scmd[0].equals("commands")){
+	public static void executeCommand(String[] cmd, int i){
+		Logger.logError("User has executed command " + cmd[0]);
+		if(!cmd[0].equals("commands")){
 			boolean ran = false;
 			for(Command c : cmdlist){
 				if(c!=null){
-					c.execute(scmd);
-					ran = true;
+					ran = c.execute(cmd, i);
+					if(ran)break;
 				}
 			}
 			if(!ran){
-				Logger.sendMessage(scmd[0] + " is an invalid command, do \'commands\' for a list of valid commands");
+				if(i!=-1)Server.getList()[i].sendMessage(cmd[0] + " is an invalid command, do \'commands\' for a list of valid commands");
+				else Logger.sendMessage(cmd[0] + " is an invalid command, do \'commands\' for a list of valid commands");
 			}
 		}else{
-			Logger.sendMessage("Valid commands: \n----------------");
-			for(int x = 0; x < cmdlist.length; x++){
-				if(cmdlist[x]!=null)Logger.sendMessage(x + ". " + cmdlist[x].getUsage() + "\n\tDesc: " + cmdlist[x].getDescription());
+			String msg = (cmds+1) + " valid commands: \n----------------\n";
+			for(int x = 0; x < cmds; x++){
+				if(cmdlist[x]!=null)msg += x + ". " + cmdlist[x].getUsage() + "\n\tDesc: " + cmdlist[x].getDescription() + "\n";
 			}
+			if(i!=-1)Server.getList()[i].sendMessage(msg);
+			else Logger.sendMessage(msg);
 		}
 	}
 
 	protected Command(){
-		cmds++;
 		add(this);
 		usage = new String("example").split(" ");
 		command = "example";
@@ -99,10 +115,10 @@ public abstract class Command {
 		arguments = a;
 	}
 
-	public boolean execute (String[] cmd){
+	public boolean execute (String[] cmd, int i){
 		if(cmd[0].equalsIgnoreCase(command)){
 			if(cmd.length-1 == arguments){
-				return run(cmd);
+				return run(cmd, i);
 			}else{
 				Logger.sendMessage("Incorrect command usage, correct usage: " + getUsage());
 				return true;
@@ -111,5 +127,5 @@ public abstract class Command {
 		return false;
 	}
 
-	public abstract boolean run(String[] cmd);
+	public abstract boolean run(String[] cmd, int i);
 }

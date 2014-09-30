@@ -10,7 +10,7 @@ public class Command_Quit extends Command {
 	}
 
 	@Override
-	public boolean run(String[] cmd) {
+	public boolean run(String[] cmd, int i) {
 		System.exit(0);
 		return true;
 	}

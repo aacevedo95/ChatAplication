@@ -1,11 +1,11 @@
 package Main;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.net.SocketAddress;
 
 public class ChatSession{
 
@@ -16,23 +16,7 @@ public class ChatSession{
 	public ChatSession(Socket s){
 		closed = false;
 		socket = s;
-		final SocketAddress address = s.getRemoteSocketAddress();
-		chatListener = new Thread(new Runnable(){
-			@Override
-			public void run() {
-				try {
-					DataInputStream dis = new DataInputStream(socket.getInputStream());
-					while(!closed){
-						String msg;
-						if((msg = dis.readUTF()) != null)System.out.println(msg);
-					}
-				} catch (IOException e) {
-					Logger.sendMessage("Disconnected from " + address.toString());
-					close();
-					closed = true;
-				}
-			}
-		}, "ClientChatListener");
+		chatListener = new Thread(new ChatListener(), "ClientChatListener");
 		chatListener.start();
 		BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
 		try {
@@ -63,6 +47,23 @@ public class ChatSession{
 			socket.close();
 		} catch (IOException e) {
 			Logger.logError("Could not close chat listener socket - " + e.getMessage());
+		}
+	}
+	
+	private class ChatListener implements Runnable{
+		@Override
+		public void run() {
+			try {
+				DataInputStream dis = new DataInputStream(socket.getInputStream());
+				while(!closed){
+					String msg;
+					if((msg = dis.readUTF()) != null)System.out.println(msg);
+				}
+			} catch (IOException e) {
+				Logger.sendMessage("Disconnected from " + socket.getRemoteSocketAddress().toString());
+				close();
+				closed = true;
+			}
 		}
 	}
 }
