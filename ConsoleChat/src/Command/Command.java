@@ -10,6 +10,7 @@ public abstract class Command {
 	protected String description;
 	protected int arguments;
 	protected boolean scmd;
+	protected boolean adminCommand;
 
 	private static Command[] cmdlist;
 	private static int cmds;
@@ -22,6 +23,7 @@ public abstract class Command {
 		new Command_Online();
 		new Command_StopServer();
 		new Command_Message();
+		new Command_MakeAdmin();
 		compressList();
 	}
 
@@ -39,7 +41,7 @@ public abstract class Command {
 	}
 
 	private static void compressList(){
-		Logger.logInfo("Compressing list of commands");
+		Logger.logInfo("Compressing command list");
 		Command[] list = new Command[cmds];
 		for(int x = 0; x < cmds; x++){
 			list[x] = cmdlist[x];
@@ -48,7 +50,7 @@ public abstract class Command {
 	}
 
 	public static void executeCommand(String[] cmd, int i){
-		Logger.logError("User has executed command " + cmd[0]);
+		Logger.logInfo("User has executed command " + cmd[0]);
 		if(!cmd[0].equals("commands")){
 			boolean ran = false;
 			for(Command c : cmdlist){
@@ -73,10 +75,11 @@ public abstract class Command {
 
 	protected Command(){
 		add(this);
-		usage = new String("example").split(" ");
 		command = "example";
+		usage = new String(String.format("%s", command)).split(" ");
 		description = "Example command";
 		arguments = 0;
+		adminCommand = false;
 	}
 
 	protected String getUsage(){
@@ -115,12 +118,25 @@ public abstract class Command {
 		arguments = a;
 	}
 
+	protected boolean isAdminCommand(){
+		return adminCommand;
+	}
+
+	protected void setAdminCommand(boolean b){
+		adminCommand = b;
+	}
+
 	public boolean execute (String[] cmd, int i){
 		if(cmd[0].equalsIgnoreCase(command)){
-			if(cmd.length-1 == arguments){
-				return run(cmd, i);
+			if((adminCommand && Server.getList()[i].isAdmin())||!adminCommand){
+				if(cmd.length >= arguments){
+					return run(cmd, i);
+				}else{
+					Logger.sendMessage("Incorrect command usage, correct usage: " + getUsage());
+					return true;
+				}
 			}else{
-				Logger.sendMessage("Incorrect command usage, correct usage: " + getUsage());
+				Server.getList()[i].sendMessage("You do not have permission to use command \'" + command + '\'');
 				return true;
 			}
 		}

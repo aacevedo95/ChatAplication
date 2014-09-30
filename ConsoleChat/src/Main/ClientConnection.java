@@ -11,12 +11,14 @@ public class ClientConnection implements Runnable{
 	private Thread listener;
 	private int index;
 	private DataOutputStream dos;
+	private boolean isAdmin;
 
 	private static int users = 0;
 
 	public ClientConnection(){
 		username = "USER"+users;
 		users++;
+		setAdmin(false);
 		listener = new Thread(this, "UserThread-"+username);
 		listener.start();
 	}
@@ -42,7 +44,8 @@ public class ClientConnection implements Runnable{
 	}
 
 	public String getUsername(){
-		return username;
+		if(isAdmin)return '*' + username;
+		else return username;
 	}
 
 	public void setUsername(String u){
@@ -84,7 +87,7 @@ public class ClientConnection implements Runnable{
 			while(true){
 				String msg;
 				if((msg = dis.readUTF()) != null){
-					Logger.logInfo(username + " said \'" + msg + "\'");
+					Logger.logInfo(getUsername() + " said \'" + msg + "\'");
 					Server.analyzeMessage(msg, index);
 				}
 			}
@@ -94,5 +97,13 @@ public class ClientConnection implements Runnable{
 			Server.chatToAll(username + " has disconnected", -1);
 			users--;
 		}
+	}
+
+	public boolean isAdmin() {
+		return isAdmin;
+	}
+
+	public void setAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
 	}
 }

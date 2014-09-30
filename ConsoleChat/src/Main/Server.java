@@ -101,4 +101,14 @@ public class Server {
 			run();
 		}
 	}
+	
+	public static void setAdmin(int i, boolean b){
+		Logger.logInfo("Making " + list[i].getUsername() + " an admin...");
+		list[i].setAdmin(b);
+	}
+	
+	public static ClientConnection search(String name){
+		for(int x = 0; x < list.length; x++)if(list[x]!=null && list[x].getUsername().equalsIgnoreCase(name))return list[x];
+		return null;
+	}
 }
