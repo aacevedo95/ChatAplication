@@ -2,7 +2,10 @@ package Window;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+
 import javax.swing.JFrame;
+
+import Utility.Logger;
 
 public abstract class Window {
 	
@@ -26,6 +29,7 @@ public abstract class Window {
 	}
 	
 	protected void finalize(){
+		Logger.logInfo("Created new window " + frame.getTitle());
 		center();
 		frame.setVisible(true);
 	}

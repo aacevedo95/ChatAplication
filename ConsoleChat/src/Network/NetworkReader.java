@@ -3,6 +3,7 @@ package Network;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import Utility.Logger;
 
 public class NetworkReader {
 	
@@ -14,7 +15,7 @@ public class NetworkReader {
 		try {
 			dis = new DataInputStream(socket.getInputStream());
 		} catch (IOException e) {
-			//DO CODE
+			Logger.logError("Could not create a data input stream for " + socket.getRemoteSocketAddress());
 		}
 	}
 	
@@ -22,7 +23,7 @@ public class NetworkReader {
 		try {
 			dis.close();
 		} catch (IOException e) {
-			//DO CODE
+			Logger.logError("Could not close input stream for " + socket.getRemoteSocketAddress());
 		}
 	}
 	
@@ -36,7 +37,7 @@ public class NetworkReader {
 			}
 			return list;
 		} catch (IOException e) {
-			//DO CODE
+			Logger.logError("Could not read from data stream for " + socket.getRemoteSocketAddress());
 		}
 		return null;
 	}

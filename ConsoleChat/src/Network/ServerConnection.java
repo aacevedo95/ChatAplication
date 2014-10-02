@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import Utility.Logger;
 
 public class ServerConnection extends NetworkingClass implements Receivable{
 	
@@ -17,9 +18,9 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 			dos = new DataOutputStream(socket.getOutputStream());
 			serverListener = new NetworkListener(socket, this, "ServerListener");
 		} catch (UnknownHostException e) {
-			//HANDLE CODE
+			Logger.logError("Could not identify host " + address);
 		} catch (IOException e) {
-			//HANDLE CODE
+			Logger.logError("Encountered an I/O error while attempting to connect to " + address);
 		}
 	}
 	
@@ -34,7 +35,7 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 			dos.close();
 			socket.close();
 		} catch (IOException e) {
-			//DO CODE
+			Logger.logError("Could not close the socket for " + socket.getRemoteSocketAddress());
 		}
 	}
 	
@@ -42,11 +43,14 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 		try {
 			dos.write(msg.getBytes());
 		} catch (IOException e) {
-			//DO CODE
+			Logger.logError("Could not send data to server");
 		}
 	}
 
 	@Override
 	public void receiveData(byte[] data) {
+		/*
+		 * DO THE FUCKING CODE
+		 */
 	}
 }
