@@ -13,7 +13,7 @@ public class NetworkListener implements Runnable{
 	private boolean running;
 
 	public NetworkListener(Socket newSocket, Receivable newReceivable, String newThreadName) {
-		//LOG NEW NETWORK LISTENER
+		//LOG
 		socket = newSocket;
 		obj = newReceivable;
 		threadName = newThreadName;
@@ -41,6 +41,6 @@ public class NetworkListener implements Runnable{
 			byte[] data = nr.readBytes();
 			if(data!=null)obj.receiveData(data);
 		}
-		//LOG END
+		//LOG
 	}
 }
