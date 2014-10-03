@@ -28,7 +28,7 @@ public class CommandHandler {
 		commands++;
 	}
 
-	public static void registerCommands() {
+	public void registerCommands() {
 	}
 
 	public void process(Server server, ClientConnection clientConnection, String data) {
