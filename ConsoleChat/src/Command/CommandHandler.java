@@ -28,9 +28,6 @@ public class CommandHandler {
 		commands++;
 	}
 
-	public void registerCommands() {
-	}
-
 	public void process(Server server, ClientConnection clientConnection, String data) {
 		Logger.logInfo("Processing command...");
 		if(data.charAt(0)=='/'){
@@ -44,11 +41,11 @@ public class CommandHandler {
 						Logger.logInfo("Executed command " + c.getCommand() + " successfuly");
 						break;
 					case Command.PERMISSION_ERROR:
-						Logger.logInfo(clientConnection.getUsername() + " tried to use command " + c.getCommand());
+						Logger.logInfo(clientConnection.getUser().getUsername() + " tried to use command " + c.getCommand());
 						clientConnection.write("You do not have permission to use " + c.getCommand());
 						break;
 					case Command.ARGUMENT_ERROR:
-						Logger.logInfo(clientConnection.getUsername() + " passed an invalid amount of arguments to command " + c.getCommand());
+						Logger.logInfo(clientConnection.getUser().getUsername() + " passed an invalid amount of arguments to command " + c.getCommand());
 						clientConnection.write("You passed an invalid amount of arguments to command " + c.getCommand() + ", correct usage: " + c.getUsage());
 						break;
 					case Command.STATE_ERROR:

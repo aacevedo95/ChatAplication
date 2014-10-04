@@ -8,14 +8,22 @@ public class UserData implements Serializable{
 	
 	private String userid;
 	private String username;
+	private String password;
 	private String email;
 	private String group;
+	private String joinIp;
 	private long joinDate;
+	private boolean isAdmin;
 	private boolean isOnline;
 	
 	public UserData(){
 		userid = generateId();
 		joinDate = System.currentTimeMillis();
+		username = "default-user";
+		email = "default@example.com";
+		group = "default_group";
+		setJoinIp("localhost");
+		isAdmin = false;
 		setOnline(true);
 	}
 	
@@ -72,5 +80,29 @@ public class UserData implements Serializable{
 
 	public void setOnline(boolean isOnline) {
 		this.isOnline = isOnline;
+	}
+
+	public String getJoinIp() {
+		return joinIp;
+	}
+
+	public void setJoinIp(String joinIp) {
+		this.joinIp = joinIp;
+	}
+
+	public boolean isAdmin() {
+		return isAdmin;
+	}
+
+	public void setAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 }

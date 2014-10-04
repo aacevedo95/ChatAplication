@@ -2,34 +2,77 @@ package Network;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import User.LoginSession;
+import User.UserData;
 import Utility.Logger;
-import Command.CommandHandler;
 
 public class ClientConnection implements Receivable{
 	
-	private CommandHandler cmd;
 	private Server server;
 	private Socket socket;
-	private String username;
-	private long connectTime;
 	private NetworkListener listener;
 	private DataOutputStream dos;
-	private boolean admin;
+	private UserData user;
+	private long connectTime;
+	private boolean isValid;
+	
+	public static final int LOGIN_APPROVED = 0;
+	public static final int INCORRECT_PASSWORD = 1;
+	public static final int IP_LOCK = 2;
+	public static final int BAD_LOGIN_PACKET = 3;
+	public static final int REGISTRATION_REQUIRED = 4;
+	public static final int SERVER_FULL = 5;
 
-	public ClientConnection(Server srv, CommandHandler c, Socket s, String u) {
+	public ClientConnection(Server srv, Socket s) {
+		isValid = false;
 		server = srv;
-		cmd = c;
 		setSocket(s);
-		setUsername(u);
 		connectTime = System.currentTimeMillis();
-		listener = new NetworkListener(socket, this, "ClientListener-" + username);
-		setAdmin(false);
 		try {
 			dos = new DataOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			Logger.logError("Could not create a data stream for " + getFormalUsername());
 		}
+		user = getLoginDetails(s);
+		listener = new NetworkListener(socket, this, "ClientListener-" + user.getUsername());
+	}
+	
+	private UserData getLoginDetails(Socket s){
+		try {
+			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+			LoginSession ls = (LoginSession)ois.readObject();
+			UserData u = server.getUserHandler().searchByUsername(ls.getUsername());
+			if(u==null)u = registerClient(s);
+			else if(u.getPassword().equals(ls.getPassword())){
+				dos.write(LOGIN_APPROVED);
+				ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+				oos.writeObject(server.getUserList());
+				isValid = true;
+			}else{
+				dos.write(INCORRECT_PASSWORD);
+				s.close();
+			}
+		} catch (IOException e) {
+			Logger.logError("Could not create a login session input stream");
+			try {
+				s.close();
+			} catch (IOException e1) {
+				Logger.logError("Could not close socket for " + s.getRemoteSocketAddress());
+			}
+		} catch (ClassNotFoundException e) {
+			Logger.logSevere("LogginSession class not found");
+		}
+		return null;
+	}
+	
+	private UserData registerClient(Socket s){
+		/*
+		 * DO CODE
+		 */
+		return null;
 	}
 	
 	public void disconnect(){
@@ -44,7 +87,7 @@ public class ClientConnection implements Receivable{
 	}
 	
 	private String getFormalUsername(){
-		return String.format("'%s'(%s", username, socket.getRemoteSocketAddress().toString());
+		return String.format("'%s'(%s", user.getUsername(), socket.getRemoteSocketAddress().toString());
 	}
 
 	public Socket getSocket() {
@@ -55,12 +98,8 @@ public class ClientConnection implements Receivable{
 		this.socket = socket;
 	}
 
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
+	public UserData getUser() {
+		return user;
 	}
 
 	public long getConnectTime() {
@@ -78,14 +117,10 @@ public class ClientConnection implements Receivable{
 	@Override
 	public void receiveData(byte[] data) {
 		String d = new String(data);
-		cmd.process(server, this, d);
+		server.getCommandHandler().process(server, this, d);
 	}
 
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	public void setAdmin(boolean admin) {
-		this.admin = admin;
+	public boolean isValid() {
+		return isValid;
 	}
 }

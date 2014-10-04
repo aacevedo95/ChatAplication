@@ -17,8 +17,7 @@ public abstract class Command {
 	public static final int ARGUMENT_ERROR = 2;
 	public static final int STATE_ERROR = 3;
 
-	protected Command(CommandHandler handler){
-		handler.add(this);
+	protected Command(){
 		command = "example";
 		usage = new String(String.format("%s", command)).split(" ");
 		description = "Example command";
@@ -53,7 +52,7 @@ public abstract class Command {
 	public int execute(Server server, ClientConnection c, String[] cmd){
 		if(cmd.length < arguments)return ARGUMENT_ERROR;
 		if(server == null || c == null)return STATE_ERROR;
-		if(adminCommand && c.isAdmin())return PERMISSION_ERROR;
+		if(adminCommand && c.getUser().isAdmin())return PERMISSION_ERROR;
 		return run(server, c, cmd);
 	}
 

@@ -5,18 +5,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import Command.CommandHandler;
+import User.UserHandler;
 import Utility.Logger;
 
 public class Server extends NetworkingClass{
 	
 	private ClientConnection[] clientList;
-	private CommandHandler handler;
+	private CommandHandler clientHandler;
+	private UserHandler userHandler;
 	private ServerSocket ss;
 	private NewClientListener ncl;
 	private String serverName;
 	private String serverPassword;
 	private int clients;
 	private int maxClients;
+	private boolean iplock;
 	
 	public static final int CONNECTION_ACCEPTED = 0;
 	public static final int SERVER_FULL = 1;
@@ -30,9 +33,11 @@ public class Server extends NetworkingClass{
 		serverName = "DefaultChatServer";
 		serverPassword = "";
 		maxClients = DEFAULT_SIZE;
+		iplock = false;
 		clientList = new ClientConnection[maxClients];
-		handler = new CommandHandler();
-		handler.registerCommands();
+		clientHandler = new CommandHandler();
+		userHandler = new UserHandler();
+		//ADD SERVER COMMANDS TO HANDLER
 		clients = 0;
 	}
 	
@@ -83,13 +88,13 @@ public class Server extends NetworkingClass{
 	
 	public String[] getUserList(){
 		String[] tmp = new String[clients];
-		for(int x = 0; x < clients; x++)tmp[x]=clientList[x].getUsername();
+		for(int x = 0; x < clients; x++)tmp[x]=clientList[x].getUser().getUsername();
 		return tmp;
 	}
 	
 	public void deleteClient(String username){
 		for(int x = 0; x < clients; x++){
-			if(clientList[x]!=null&&username.equals(clientList[x].getUsername())){
+			if(clientList[x]!=null&&username.equals(clientList[x].getUser().getUsername())){
 				Logger.logInfo(username + " found at position " + x);
 				clientList[x].disconnect();
 				clientList[x] = null;
@@ -112,14 +117,13 @@ public class Server extends NetworkingClass{
 	}
 
 	public CommandHandler getHandler() {
-		return handler;
+		return clientHandler;
 	}
 
 	public void receiveClient(Socket c) {
 		Logger.logInfo("Received new client : " + c.getRemoteSocketAddress());
-		/*
-		 * DO CODE
-		 */
+		ClientConnection cc = new ClientConnection(this, c);
+		if(cc.isValid())addClient(cc);
 	}
 
 	public ServerSocket getServerSocket() {
@@ -132,5 +136,21 @@ public class Server extends NetworkingClass{
 
 	public void setServerPassword(String serverPassword) {
 		this.serverPassword = serverPassword;
+	}
+
+	public boolean isIpLocked() {
+		return iplock;
+	}
+
+	public void setIpLock(boolean iplock) {
+		this.iplock = iplock;
+	}
+	
+	public CommandHandler getCommandHandler(){
+		return clientHandler;
+	}
+
+	public UserHandler getUserHandler() {
+		return userHandler;
 	}
 }
