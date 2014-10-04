@@ -13,15 +13,11 @@ public class NewClientListener implements Runnable{
 	@Override
 	public void run() {
 		Socket socket = null;
-		ClientConnection client = null;
 		while(running){
 			try {
 				socket = server.getServerSocket().accept();
 				Logger.logInfo("Processing connection " + socket.getRemoteSocketAddress());
-				/*
-				 * DO CODE
-				 */
-				server.receiveClient(client);
+				server.receiveClient(socket);
 			} catch (IOException e) {
 				Logger.logError("Could not accept new client ");
 			}

@@ -2,17 +2,19 @@ package Network;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 import Command.CommandHandler;
 import Utility.Logger;
 
 public class Server extends NetworkingClass{
 	
-	private String serverName;
 	private ClientConnection[] clientList;
 	private CommandHandler handler;
 	private ServerSocket ss;
 	private NewClientListener ncl;
+	private String serverName;
+	private String serverPassword;
 	private int clients;
 	private int maxClients;
 	
@@ -26,6 +28,7 @@ public class Server extends NetworkingClass{
 
 	public Server() {
 		serverName = "DefaultChatServer";
+		serverPassword = "";
 		maxClients = DEFAULT_SIZE;
 		clientList = new ClientConnection[maxClients];
 		handler = new CommandHandler();
@@ -40,6 +43,13 @@ public class Server extends NetworkingClass{
 			ncl.start();
 		} catch (IOException e) {
 			Logger.logError("Could not create server and bind to port " + PORT);
+		}
+	}
+	
+	public void stop(){
+		ncl.stop();
+		for(ClientConnection c : clientList){
+			c.disconnect();
 		}
 	}
 
@@ -61,6 +71,10 @@ public class Server extends NetworkingClass{
 
 	public int getNumberOfClients() {
 		return clients;
+	}
+	
+	public void modifyNumberOfClients(int mod){
+		clients+=mod;
 	}
 
 	public ClientConnection[] getClientList() {
@@ -101,12 +115,22 @@ public class Server extends NetworkingClass{
 		return handler;
 	}
 
-	public void receiveClient(ClientConnection c) {
-		Logger.logInfo("Received new client " + c.getUsername() + " from " + c.getSocket().getRemoteSocketAddress());
-		addClient(c);
+	public void receiveClient(Socket c) {
+		Logger.logInfo("Received new client : " + c.getRemoteSocketAddress());
+		/*
+		 * DO CODE
+		 */
 	}
 
 	public ServerSocket getServerSocket() {
 		return ss;
+	}
+
+	public String getServerPassword() {
+		return serverPassword;
+	}
+
+	public void setServerPassword(String serverPassword) {
+		this.serverPassword = serverPassword;
 	}
 }
