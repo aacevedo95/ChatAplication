@@ -7,6 +7,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import User.RegistrationSession;
 import Utility.Logger;
@@ -18,7 +19,7 @@ public class Window_Register extends Window{
 	
 	public Window_Register(){
 		super();
-		hasResult = true;
+		hasResult = false;
 		
 		JButton register = new JButton("Register");
 		JLabel labelUsername = new JLabel("Username");
@@ -26,7 +27,7 @@ public class Window_Register extends Window{
 		JLabel labelEmail = new JLabel("Email");
 		JLabel labelGroup = new JLabel("Group");
 		final JTextField fieldUsername = new JTextField(TEXT_FIELD_LENGTH);
-		final JTextField fieldPassword = new JTextField(TEXT_FIELD_LENGTH);
+		final JPasswordField fieldPassword = new JPasswordField(TEXT_FIELD_LENGTH);
 		final JTextField fieldEmail = new JTextField(TEXT_FIELD_LENGTH);
 		final JTextField fieldGroup = new JTextField(TEXT_FIELD_LENGTH);
 		
@@ -38,9 +39,12 @@ public class Window_Register extends Window{
 					Logger.showWarning("Empty username field");
 					return;
 				}
-				String password = fieldPassword.getText();
-				if(password.length()<6){
-					Logger.showWarning("Password cannot be less than 6 characters long");
+				if(username.length() < 6){
+					Logger.showWarning("Username cannot be less than 6 characters long");
+				};
+				String password = new String(fieldPassword.getPassword());
+				if(password.length()<4){
+					Logger.showWarning("Password cannot be less than 4 characters long");
 					return;
 				}
 				String email = fieldEmail.getText();
@@ -51,6 +55,7 @@ public class Window_Register extends Window{
 				rs.setEmail(email);
 				rs.setGroup(group);
 				hasResult = true;
+				frame.dispose();
 			}
 		});
 		
@@ -91,15 +96,14 @@ public class Window_Register extends Window{
 	
 	public static RegistrationSession showRegistrationWindow(){
 		Window_Register wr = new Window_Register();
-		while(!wr.hasResult())
+		while(!wr.hasResult()){
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				Logger.logError("Registration session interrupted");
+				Logger.logSevere("Regristration session interrupted");
 			}
+		}
 		RegistrationSession session = wr.getSession();
-		wr.getFrame().dispose();
-		wr = null;
 		return session;
 	}
 }
