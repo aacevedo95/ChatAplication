@@ -7,6 +7,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.JOptionPane;
+
 import Window.Window_Console;
 
 public class Logger{
@@ -95,5 +97,13 @@ public class Logger{
 	public static void setConsoleVisible(boolean b) {
 		if(!loggerAlive)setup();
 		console.setVisible(b);
+	}
+	
+	public static void showWarning(String msg){
+		JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.WARNING_MESSAGE);
+	}
+	
+	public static void showMessage(String msg){
+		JOptionPane.showMessageDialog(null, msg, "Message", JOptionPane.PLAIN_MESSAGE);
 	}
 }

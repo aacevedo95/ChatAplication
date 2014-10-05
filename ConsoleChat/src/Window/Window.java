@@ -2,14 +2,14 @@ package Window;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-
 import javax.swing.JFrame;
-
 import Utility.Logger;
 
 public abstract class Window {
 	
 	protected JFrame frame;
+	
+	protected static final int TEXT_FIELD_LENGTH = 20;
 	
 	public Window() {
 		frame = new JFrame();

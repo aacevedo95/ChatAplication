@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import User.LoginSession;
+import User.RegistrationSession;
 import User.UserData;
 import Utility.Logger;
 
@@ -25,6 +26,7 @@ public class ClientConnection implements Receivable{
 	public static final int BAD_LOGIN_PACKET = 3;
 	public static final int REGISTRATION_REQUIRED = 4;
 	public static final int SERVER_FULL = 5;
+	public static final int REGISTRATION_EXISTS = 6;
 
 	public ClientConnection(Server srv, Socket s) {
 		isValid = false;
@@ -37,7 +39,7 @@ public class ClientConnection implements Receivable{
 			Logger.logError("Could not create a data stream for " + getFormalUsername());
 		}
 		user = getLoginDetails(s);
-		listener = new NetworkListener(socket, this, "ClientListener-" + user.getUsername());
+		if(isValid)listener = new NetworkListener(socket, this, "ClientListener-" + user.getUsername());
 	}
 	
 	private UserData getLoginDetails(Socket s){
@@ -45,8 +47,15 @@ public class ClientConnection implements Receivable{
 			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 			LoginSession ls = (LoginSession)ois.readObject();
 			UserData u = server.getUserHandler().searchByUsername(ls.getUsername());
-			if(u==null)u = registerClient(s);
-			else if(u.getPassword().equals(ls.getPassword())){
+			if(u==null){
+				u = registerClient(s);
+				if(u==null){
+					ois.close();
+					s.close();
+					return null;
+				}
+			}
+			if(u.getPassword().equals(ls.getPassword())){
 				dos.write(LOGIN_APPROVED);
 				ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
 				oos.writeObject(server.getUserList());
@@ -69,15 +78,43 @@ public class ClientConnection implements Receivable{
 	}
 	
 	private UserData registerClient(Socket s){
-		/*
-		 * DO CODE
-		 */
+		try {
+			DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+			dos.write(REGISTRATION_REQUIRED);
+			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+			RegistrationSession nu = (RegistrationSession)ois.readObject();
+			if(nu!=null){
+				UserData tmp = server.getUserHandler().searchByUsername(nu.getUsername());
+				if(tmp==null){
+					Logger.logInfo("Creating new user " + nu.getUsername());
+					UserData ud = new UserData();
+					ud.setUsername(nu.getUsername());
+					ud.setPassword(nu.getPassword());
+					ud.setEmail(nu.getEmail());
+					ud.setGroup(nu.getGroup());
+					ud.setJoinIp(s.getRemoteSocketAddress().toString());
+					return ud;
+				}else{
+					Logger.logInfo(nu.getUsername() + " already exists, cancelling registration");
+					dos.write(REGISTRATION_EXISTS);
+				}
+			}
+			Logger.logInfo("Could not register new user @ " + s.getRemoteSocketAddress());
+			dos.close();
+			ois.close();
+			s.close();
+		} catch (IOException e) {
+			Logger.logInfo("Could not create socket stream durring registration for " + s.getRemoteSocketAddress());
+		} catch (ClassNotFoundException e) {
+			Logger.logSevere("Could not find RegistrationSession class");
+		}
 		return null;
 	}
 	
 	public void disconnect(){
 		Logger.logInfo("Disconnecting " + getFormalUsername());
 		listener.stop();
+		user.setOnline(false);
 		try {
 			dos.close();
 			socket.close();
