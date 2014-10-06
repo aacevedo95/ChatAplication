@@ -93,17 +93,4 @@ public class Window_Register extends Window{
 	public RegistrationSession getSession(){
 		return rs;
 	}
-	
-	public static RegistrationSession showRegistrationWindow(){
-		Window_Register wr = new Window_Register();
-		while(!wr.hasResult()){
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				Logger.logSevere("Regristration session interrupted");
-			}
-		}
-		RegistrationSession session = wr.getSession();
-		return session;
-	}
 }

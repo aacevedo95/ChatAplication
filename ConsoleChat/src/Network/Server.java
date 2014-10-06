@@ -98,11 +98,13 @@ public class Server extends NetworkingClass{
 				Logger.logInfo(username + " found at position " + x);
 				clientList[x].disconnect();
 				clientList[x] = null;
+				Logger.logInfo(username + " deleted, shifting list downwards");
 				for(int y = x; y < clients; y++){
-					Logger.logInfo(username + " deleted, shifting list downwards");
 					if(y!=clients-1)clientList[y]=clientList[y+1];
 					else clientList[y] = null;
 				}
+				clients--;
+				break;
 			}
 		}
 	}
@@ -114,6 +116,12 @@ public class Server extends NetworkingClass{
 			for(int x = 0; x < clients; x++)tmp[x]=clientList[x];
 			clientList = tmp;
 		}
+		clientList[clients]=c;
+		clients++;
+	}
+	
+	public void sendMessage(String msg){
+		for(int x = 0; x < clients; x++)clientList[x].write("0000" + msg);
 	}
 
 	public CommandHandler getHandler() {

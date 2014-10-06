@@ -2,6 +2,9 @@ package User;
 
 import java.util.Properties;
 
+import Utility.Logger;
+import Window.Window_Register;
+
 public class RegistrationSession {
 	
 	private String username;
@@ -48,5 +51,17 @@ public class RegistrationSession {
 
 	public Properties getSystem() {
 		return system;
+	}
+	
+	public static RegistrationSession showRegistrationWindow(){
+		Window_Register wr = new Window_Register();
+		while(!wr.hasResult()){
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				Logger.logSevere("Regristration session interrupted");
+			}
+		}
+		return wr.getSession();
 	}
 }
