@@ -37,7 +37,7 @@ public class LoginSession implements Serializable{
 		return system;
 	}
 	
-	public LoginSession showLoginScreen(String address){
+	public static LoginSession showLoginScreen(String address){
 		Window_Login wl = new Window_Login(address);
 		while(!wl.hasResult()){
 			try {

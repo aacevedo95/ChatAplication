@@ -10,7 +10,7 @@ import User.RegistrationSession;
 import User.UserData;
 import Utility.Logger;
 
-public class ClientConnection implements Receivable{
+public class ClientConnection extends NetworkingClass implements Receivable{
 	
 	private Server server;
 	private Socket socket;
@@ -19,14 +19,6 @@ public class ClientConnection implements Receivable{
 	private UserData user;
 	private long connectTime;
 	private boolean isValid;
-	
-	public static final int LOGIN_APPROVED = 0;
-	public static final int INCORRECT_PASSWORD = 1;
-	public static final int IP_LOCK = 2;
-	public static final int BAD_LOGIN_PACKET = 3;
-	public static final int REGISTRATION_REQUIRED = 4;
-	public static final int SERVER_FULL = 5;
-	public static final int REGISTRATION_EXISTS = 6;
 
 	public ClientConnection(Server srv, Socket s) {
 		isValid = false;
@@ -149,6 +141,10 @@ public class ClientConnection implements Receivable{
 		} catch (IOException e) {
 			Logger.logError("Could not send data to " + getFormalUsername());
 		}
+	}
+	
+	public void sendMessage(String msg){
+		write("0000" + msg.getBytes());
 	}
 
 	@Override

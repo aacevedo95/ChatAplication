@@ -54,6 +54,8 @@ public class CommandHandler {
 					}
 				}
 			}
+		}else{
+			server.sendMessage(new String(data));
 		}
 	}
 }

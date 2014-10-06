@@ -53,7 +53,7 @@ public class RegistrationSession {
 		return system;
 	}
 	
-	public static RegistrationSession showRegistrationWindow(){
+	public static RegistrationSession showRegistration(){
 		Window_Register wr = new Window_Register();
 		while(!wr.hasResult()){
 			try {

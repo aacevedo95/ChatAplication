@@ -3,7 +3,6 @@ package Network;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import Command.CommandHandler;
 import User.UserHandler;
 import Utility.Logger;
@@ -37,7 +36,11 @@ public class Server extends NetworkingClass{
 		clientList = new ClientConnection[maxClients];
 		clientHandler = new CommandHandler();
 		userHandler = new UserHandler();
-		//ADD SERVER COMMANDS TO HANDLER
+		/*
+		 * 
+		 * REGISTER THE COMMAND LIST
+		 * 
+		 */
 		clients = 0;
 	}
 	
@@ -121,7 +124,7 @@ public class Server extends NetworkingClass{
 	}
 	
 	public void sendMessage(String msg){
-		for(int x = 0; x < clients; x++)clientList[x].write("0000" + msg);
+		for(int x = 0; x < clients; x++)clientList[x].sendMessage(msg);
 	}
 
 	public CommandHandler getHandler() {
