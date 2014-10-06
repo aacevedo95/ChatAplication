@@ -60,6 +60,8 @@ public class Window_Login extends Window{
 				ls = new LoginSession();
 				ls.setUsername(username);
 				ls.setPassword(password);
+				frame.setVisible(false);
+				frame.dispose();
 				hasResult = true;
 			}
 		});

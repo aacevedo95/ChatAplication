@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Properties;
 import User.LoginSession;
 import User.RegistrationSession;
 import User.UserData;
@@ -17,6 +18,7 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 	private NetworkListener listener;
 	private DataOutputStream dos;
 	private UserData user;
+	private Properties properties;
 	private long connectTime;
 	private boolean isValid;
 
@@ -75,6 +77,7 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 			dos.write(REGISTRATION_REQUIRED);
 			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 			RegistrationSession nu = (RegistrationSession)ois.readObject();
+			properties = nu.getSystem();
 			if(nu!=null){
 				UserData tmp = server.getUserHandler().searchByUsername(nu.getUsername());
 				if(tmp==null){

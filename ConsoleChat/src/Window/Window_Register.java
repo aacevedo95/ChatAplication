@@ -21,7 +21,7 @@ public class Window_Register extends Window{
 		super();
 		hasResult = false;
 		
-		JButton register = new JButton("Register");
+		JButton buttonRegister = new JButton("Register");
 		JLabel labelUsername = new JLabel("Username");
 		JLabel labelPassword = new JLabel("Password");
 		JLabel labelEmail = new JLabel("Email");
@@ -31,7 +31,7 @@ public class Window_Register extends Window{
 		final JTextField fieldEmail = new JTextField(TEXT_FIELD_LENGTH);
 		final JTextField fieldGroup = new JTextField(TEXT_FIELD_LENGTH);
 		
-		register.addActionListener(new ActionListener(){
+		buttonRegister.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String username = fieldUsername.getText();
@@ -54,8 +54,9 @@ public class Window_Register extends Window{
 				rs.setPassword(password);
 				rs.setEmail(email);
 				rs.setGroup(group);
-				hasResult = true;
+				frame.setVisible(false);
 				frame.dispose();
+				hasResult = true;
 			}
 		});
 		
@@ -80,7 +81,7 @@ public class Window_Register extends Window{
 		}
 		frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 		frame.add(dataPanel);
-		frame.add(register);
+		frame.add(buttonRegister);
 		frame.pack();
 		frame.setTitle("Registration");
 		finalize();

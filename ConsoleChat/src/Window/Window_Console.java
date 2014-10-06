@@ -20,7 +20,7 @@ public class Window_Console extends Window{
 		area.setBackground(Color.black);
 		area.setForeground(Color.white);
 		JScrollPane pane = new JScrollPane(area);
-		pane.setPreferredSize(new Dimension(500,300));
+		pane.setPreferredSize(new Dimension(700,450));
 		frame.add(pane);
 		frame.pack();
 		PrintStream out = new PrintStream(new SystemTextAreaOutputStream(area));

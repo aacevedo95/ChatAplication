@@ -1,7 +1,6 @@
 package User;
 
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.Random;
 
 @SuppressWarnings("serial")
@@ -13,7 +12,6 @@ public class UserData implements Serializable{
 	private String email;
 	private String group;
 	private String joinIp;
-	private Properties system;
 	private long joinDate;
 	private boolean isAdmin;
 	private boolean isOnline;
@@ -106,13 +104,5 @@ public class UserData implements Serializable{
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public Properties getSystem() {
-		return system;
-	}
-	
-	public void setSystem(Properties p){
-		system = p;
 	}
 }

@@ -6,9 +6,7 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import javax.swing.JOptionPane;
-
 import Window.Window_Console;
 
 public class Logger{
@@ -21,24 +19,26 @@ public class Logger{
 
 	private static void setup(){
 		loggerAlive = true;
-		if(!new File("logs").exists())new File("logs").mkdir();
-		log = new File("logs/log " + getDateAndTimeLogName() + ".log");
-		try {
-			log.createNewFile();
-		} catch (IOException e) {
-			javax.swing.JOptionPane.showMessageDialog(null, "Contact administrator!\n" + e.getMessage() + "\n" + e.getLocalizedMessage());
-		}
-		try {
-			printWriter = new PrintWriter(log);
-		} catch (IOException e) {
-			javax.swing.JOptionPane.showMessageDialog(null, "Contact administrator!\n" + e.getMessage() + "\n" + e.getLocalizedMessage() + e.getStackTrace());
+		if(saveLogs){
+			if(!new File("logs").exists())new File("logs").mkdir();
+			log = new File("logs/log " + getDateAndTimeLogName() + ".log");
+			try {
+				log.createNewFile();
+			} catch (IOException e) {
+				javax.swing.JOptionPane.showMessageDialog(null, "Contact administrator!\n" + e.getMessage() + "\n" + e.getLocalizedMessage());
+			}
+			try {
+				printWriter = new PrintWriter(log);
+			} catch (IOException e) {
+				javax.swing.JOptionPane.showMessageDialog(null, "Contact administrator!\n" + e.getMessage() + "\n" + e.getLocalizedMessage() + e.getStackTrace());
+			}
 		}
 		setupConsole();
 	}
 
 	public static void setupConsole(){
 		if(!loggerAlive)setup();
-		console = new Window_Console();
+		if(!Main.Main.nogui)console = new Window_Console();
 	}
 
 	public static void close(){
@@ -58,11 +58,9 @@ public class Logger{
 	}
 
 	private static void writeToLog(String msg){
-		if(saveLogs){
-			if(!loggerAlive)setup();
-			printWriter.println(getDateAndTime() + " " + msg);
-			System.out.println(getDateAndTime() + " " + msg);
-		}
+		if(!loggerAlive)setup();
+		if(saveLogs)printWriter.println(getDateAndTime() + " " + msg);
+		System.out.println(getDateAndTime() + " " + msg);
 	}
 
 	public static String getDateAndTime(){
@@ -98,11 +96,11 @@ public class Logger{
 		if(!loggerAlive)setup();
 		console.setVisible(b);
 	}
-	
+
 	public static void showWarning(String msg){
 		JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.WARNING_MESSAGE);
 	}
-	
+
 	public static void showMessage(String msg){
 		JOptionPane.showMessageDialog(null, msg, "Message", JOptionPane.PLAIN_MESSAGE);
 	}

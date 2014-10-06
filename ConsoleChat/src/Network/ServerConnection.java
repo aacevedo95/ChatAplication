@@ -32,7 +32,8 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 			Logger.logInfo("Server replied with id " + reply);
 			switch(reply){
 			case REGISTRATION_REQUIRED:
-				oos.writeObject(RegistrationSession.showRegistration());
+				RegistrationSession rs = RegistrationSession.showRegistration();
+				oos.writeObject(rs);
 				int reply2 = dis.read();
 				switch(reply2){
 				case REGISTRATION_EXISTS:

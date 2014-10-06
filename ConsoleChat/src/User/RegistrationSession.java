@@ -1,11 +1,12 @@
 package User;
 
+import java.io.Serializable;
 import java.util.Properties;
-
 import Utility.Logger;
 import Window.Window_Register;
 
-public class RegistrationSession {
+@SuppressWarnings("serial")
+public class RegistrationSession implements Serializable{
 	
 	private String username;
 	private String password;

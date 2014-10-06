@@ -2,7 +2,6 @@ package User;
 
 import java.io.Serializable;
 import java.util.Properties;
-
 import Utility.Logger;
 import Window.Window_Login;
 

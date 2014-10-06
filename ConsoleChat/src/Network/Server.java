@@ -15,7 +15,6 @@ public class Server extends NetworkingClass{
 	private ServerSocket ss;
 	private NewClientListener ncl;
 	private String serverName;
-	private String serverPassword;
 	private int clients;
 	private int maxClients;
 	private boolean iplock;
@@ -29,8 +28,8 @@ public class Server extends NetworkingClass{
 	private static final int DEFAULT_SIZE = 16;
 
 	public Server() {
+		Logger.logInfo("Creating new server");
 		serverName = "DefaultChatServer";
-		serverPassword = "";
 		maxClients = DEFAULT_SIZE;
 		iplock = false;
 		clientList = new ClientConnection[maxClients];
@@ -45,6 +44,7 @@ public class Server extends NetworkingClass{
 	}
 	
 	public void start(){
+		Logger.logInfo("Starting server");
 		try {
 			ss = new ServerSocket(PORT);
 			ncl = new NewClientListener(this);
@@ -55,9 +55,15 @@ public class Server extends NetworkingClass{
 	}
 	
 	public void stop(){
+		Logger.logInfo("Stopping server");
 		ncl.stop();
 		for(ClientConnection c : clientList){
 			c.disconnect();
+		}
+		try {
+			ss.close();
+		} catch (IOException e) {
+			Logger.logError("Could not shutdown server socket");
 		}
 	}
 
@@ -75,6 +81,9 @@ public class Server extends NetworkingClass{
 
 	public void setMaxClients(int maxClients) {
 		this.maxClients = maxClients;
+		ClientConnection[] l = new ClientConnection[maxClients];
+		for(int x = 0; x < clients; x++)l[x]=clientList[x];
+		clientList = l;
 	}
 
 	public int getNumberOfClients() {
@@ -139,14 +148,6 @@ public class Server extends NetworkingClass{
 
 	public ServerSocket getServerSocket() {
 		return ss;
-	}
-
-	public String getServerPassword() {
-		return serverPassword;
-	}
-
-	public void setServerPassword(String serverPassword) {
-		this.serverPassword = serverPassword;
 	}
 
 	public boolean isIpLocked() {
