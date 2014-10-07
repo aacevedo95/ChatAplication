@@ -32,7 +32,7 @@ public class Server extends NetworkingClass{
 		serverName = "DefaultChatServer";
 		maxClients = DEFAULT_SIZE;
 		iplock = false;
-		clientList = new ClientConnection[maxClients];
+		clientList = new ClientConnection[DEFAULT_SIZE];;
 		clientHandler = new CommandHandler();
 		userHandler = new UserHandler();
 		/*
@@ -56,12 +56,12 @@ public class Server extends NetworkingClass{
 	
 	public void stop(){
 		Logger.logInfo("Stopping server");
+		userHandler.save();
 		try {
 			ncl.stop();
 			for(ClientConnection c : clientList){
 				c.disconnect();
 			}
-			userHandler.save();
 			ss.close();
 		} catch (IOException e) {
 			Logger.logError("Could not shutdown server socket");
@@ -109,6 +109,7 @@ public class Server extends NetworkingClass{
 	}
 	
 	public void deleteClient(String username){
+		Logger.logInfo("Attempting to remove client " + username);
 		for(int x = 0; x < clients; x++){
 			if(clientList[x]!=null&&username.equals(clientList[x].getUser().getUsername())){
 				Logger.logInfo(username + " found at position " + x);
@@ -123,6 +124,7 @@ public class Server extends NetworkingClass{
 				break;
 			}
 		}
+		refreshUsers();
 	}
 	
 	public void addClient(ClientConnection c){
@@ -137,7 +139,13 @@ public class Server extends NetworkingClass{
 	}
 	
 	public void sendMessage(String msg){
-		for(int x = 0; x < clients; x++)clientList[x].sendMessage(msg);
+		Logger.logInfo(msg);
+		for(int x = 0; x < clients; x++)clientList[x].write(msg);
+	}
+	
+	public void refreshUsers(){
+		Logger.logInfo("Sending all clients fresh userlists");
+		for(int x = 0; x < clients; x++)clientList[x].rawWrite("0001" + getUserList());;
 	}
 
 	public CommandHandler getHandler() {
@@ -147,7 +155,11 @@ public class Server extends NetworkingClass{
 	public void receiveClient(Socket c) {
 		Logger.logInfo("Received new client : " + c.getRemoteSocketAddress());
 		ClientConnection cc = new ClientConnection(this, c);
-		if(cc.isValid())addClient(cc);
+		if(cc.isValid()){
+			addClient(cc);
+			sendMessage(cc.getUsername() + " has entered the chat");
+			refreshUsers();
+		}
 	}
 
 	public ServerSocket getServerSocket() {

@@ -4,21 +4,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Properties;
 import User.LoginSession;
 import User.RegistrationSession;
 import User.UserData;
 import Utility.Logger;
 
-public class ClientConnection extends NetworkingClass implements Receivable{
+public class ClientConnection extends Connection{
 	
 	private Server server;
 	private Socket socket;
-	private NetworkListener listener;
-	private ObjectOutputStream oos;
-	private ObjectInputStream ois;
 	private UserData user;
-	private Properties properties;
 	private long connectTime;
 	private boolean isValid;
 
@@ -55,6 +50,8 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 					oos.writeInt(BAD_LOGIN_PACKET);
 					oos.flush();
 					return;
+				}else{
+					server.getUserHandler().add(user);
 				}
 			}
 			if(user.getPassword().equals(ls.getPassword())){
@@ -111,12 +108,18 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		} catch (IOException e) {
 			Logger.logSevere("Connection reset for '" + s.getRemoteSocketAddress() + '\'');
 			e.printStackTrace();
+			close();
 		} catch (ClassNotFoundException e) {
 			Logger.logSevere("Could not find RegistrationSession class");
 			e.printStackTrace();
 		}
 	}
 	
+	public void close(){
+		server.deleteClient(getUsername());
+	}
+	
+	@Override
 	public void disconnect(){
 		Logger.logInfo("Disconnecting " + getFormalUsername());
 		try {
@@ -149,9 +152,10 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		return connectTime;
 	}
 	
+	@Override
 	public void write(String data){
 		try {
-			oos.writeUTF(data);
+			oos.writeUTF("0000" + data);
 			oos.flush();
 		} catch (IOException e) {
 			Logger.logError("Could not send data to " + getFormalUsername());
@@ -159,8 +163,14 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		}
 	}
 	
-	public void sendMessage(String msg){
-		write("0000" + msg);
+	public void rawWrite(String msg){
+		try {
+			oos.writeUTF(msg);
+			oos.flush();
+		} catch (IOException e) {
+			Logger.logError("Could not send raw data through network");
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -172,7 +182,13 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		return isValid;
 	}
 
-	public Properties getProperties() {
-		return properties;
+	@Override
+	public boolean isAdmin() {
+		return user.isAdmin();
+	}
+
+	@Override
+	public String getUsername() {
+		return user.getUsername();
 	}
 }

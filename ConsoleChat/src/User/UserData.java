@@ -30,7 +30,7 @@ public class UserData implements Serializable{
 	public String generateId(){
 		String str = "";
 		Random g = new Random();
-		for(int x = 0; x < 12; x++)str+=g.nextInt(9)+'0';
+		for(int x = 0; x < 12; x++)str+=g.nextInt(9);
 		return str;
 	}
 	

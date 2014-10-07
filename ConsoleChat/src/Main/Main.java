@@ -1,5 +1,10 @@
 package Main;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import Command.*;
+import Network.LocalConnection;
 import Network.Server;
 import Network.ServerConnection;
 import Utility.Logger;
@@ -8,7 +13,6 @@ public class Main{
 	
 	public static boolean nogui = false;
 	public static boolean serverHost = false;
-	
 	private static Server server;
 	
 	public static void main(String[] a) throws InterruptedException{
@@ -16,14 +20,29 @@ public class Main{
 			System.out.println(a[0]);
 			if(a[0].equals("server")){
 				serverHost = true;
+				LocalConnection host = new LocalConnection();
 				if(a.length > 1 && a[1].equals("nogui")){
 					nogui = true;
-					//NOGUI code
+					Logger.logInfo("Starting server on 'nogui' mode");
+					server = new Server();
+					CommandHandler cmd = new CommandHandler();
+					cmd.add(new Command_Stop());
+					cmd.add(new Command_Start());
+					cmd.add(new Command_MakeAdmin());
+					BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
+					String input;
+					try {
+						while(!(input = kb.readLine()).equals("stop")){
+							cmd.process(server, host, input);
+						}
+						kb.close();
+					} catch (IOException e) {
+						System.out.println("SERVERSIDE reading failed");
+					}
+					shutdown();
 				}else{
 					//Server GUI code
 				}
-				server = new Server();
-				server.start();
 			}else if(a[0].equals("client")){
 				new ServerConnection("localhost");
 			}else{

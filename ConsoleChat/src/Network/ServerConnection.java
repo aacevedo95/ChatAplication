@@ -5,17 +5,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
 import User.LoginSession;
 import User.RegistrationSession;
 import Utility.Logger;
 import Window.Window_Chat;
 
-public class ServerConnection extends NetworkingClass implements Receivable{
+public class ServerConnection extends Connection{
 	
 	private Socket socket;
-	private NetworkListener serverListener;
-	private ObjectOutputStream oos;
-	private ObjectInputStream ois;
 	private Window_Chat window;
 
 	public ServerConnection(String address) {
@@ -44,9 +42,10 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 				case LOGIN_APPROVED:
 					Logger.logInfo("Successfully connected to " + socket.getRemoteSocketAddress());
 					String[] users = (ois.readUTF()).split(",");
-					serverListener = new NetworkListener(socket, this, "ServerListener", ois);
 					window = new Window_Chat(this);
+					window.write("Connected to " + address);
 					window.refreshUsers(users);
+					listener = new NetworkListener(socket, this, "ServerListener", ois);
 					break;
 				}
 				break;
@@ -73,7 +72,7 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 			case LOGIN_APPROVED:
 				Logger.logInfo("Successfully connected to " + socket.getRemoteSocketAddress());
 				String[] users = (ois.readUTF()).split(",");
-				serverListener = new NetworkListener(socket, this, "ServerListener", ois);
+				listener = new NetworkListener(socket, this, "ServerListener", ois);
 				window = new Window_Chat(this);
 				window.refreshUsers(users);
 				break;
@@ -92,18 +91,20 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 		return socket;
 	}
 	
+	@Override
 	public void disconnect(){
 		try {
 			if(oos!=null)oos.close();
 			if(ois!=null)ois.close();
-			if(serverListener!=null)serverListener.stop();
+			if(listener!=null)listener.stop();
 		} catch (IOException e) {
 			Logger.logError("Could not close the socket for " + socket.getRemoteSocketAddress());
 			e.printStackTrace();
 		}
 	}
 	
-	public void sendMessage(String msg){
+	@Override
+	public void write(String msg){
 		try {
 			oos.writeUTF(msg);
 			oos.flush();
@@ -116,19 +117,25 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 	@Override
 	public void receiveData(String data) {
 		Logger.logInfo("Performing data analysis");
+		String msg = "";
 		if(data.startsWith("0000")){
-			String msg = "";
 			for(int x = 4; x < data.length(); x++){
 				msg += data.charAt(x);
 			}
 			window.write(msg);
 		}else if(data.startsWith("0001")){
-			String msg = "";
 			for(int x = 4; x < data.length(); x++){
 				msg += data.charAt(x);
 			}
 			String[] users = msg.split(",");
 			window.refreshUsers(users);
 		}
+	}
+
+	@Override public boolean isAdmin() {return false;}
+
+	@Override
+	public String getUsername() {
+		return "CLIENTSIDE";
 	}
 }

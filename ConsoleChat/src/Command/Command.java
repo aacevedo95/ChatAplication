@@ -1,6 +1,6 @@
 package Command;
 
-import Network.ClientConnection;
+import Network.Connection;
 import Network.Server;
 
 public abstract class Command {
@@ -49,12 +49,12 @@ public abstract class Command {
 		return adminCommand;
 	}
 	
-	public int execute(Server server, ClientConnection c, String[] cmd){
+	public int execute(Server server, Connection c, String[] cmd){
 		if(cmd.length < arguments)return ARGUMENT_ERROR;
 		if(server == null || c == null)return STATE_ERROR;
-		if(adminCommand && c.getUser().isAdmin())return PERMISSION_ERROR;
+		if(adminCommand && !c.isAdmin())return PERMISSION_ERROR;
 		return run(server, c, cmd);
 	}
 
-	public abstract int run(Server server, ClientConnection c, String[] cmd);
+	public abstract int run(Server server, Connection c, String[] cmd);
 }

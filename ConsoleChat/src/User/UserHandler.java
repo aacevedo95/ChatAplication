@@ -20,6 +20,7 @@ public class UserHandler implements Serializable{
 	public static final int DEFAULT_LIST_SIZE = 32;
 
 	public UserHandler(){
+		Logger.logInfo("Setting up UserHandler");
 		list = new UserData[DEFAULT_LIST_SIZE];
 		users = 0;
 		load();
@@ -29,6 +30,7 @@ public class UserHandler implements Serializable{
 		try{
 			File file = new File("users.list");
 			if(!file.exists())return;
+			Logger.logInfo("UserHandler file was found, loading previous data");
 			FileInputStream fis = new FileInputStream(file);
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			UserHandler tmp = (UserHandler)ois.readObject();
@@ -45,6 +47,7 @@ public class UserHandler implements Serializable{
 	}
 
 	public void save(){
+		Logger.logInfo("Saving user handler");
 		try {
 			File file = new File("users.list");
 			if(!file.exists())file.createNewFile();

@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -76,10 +75,20 @@ public class Window_Chat extends Window{
 		/*
 		 * Action listeners
 		 */
+		send.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String msg = input.getText();
+				if(msg!=null)connection.write(msg);
+				input.setText("");
+			}
+		});
 		disconnect.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//DO CODE
+				frame.dispose();
+				frame = null;
+				connection.disconnect();
 			}
 		});
 		sendUsrMsg.addActionListener(new ActionListener(){
@@ -95,8 +104,7 @@ public class Window_Chat extends Window{
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					String msg = input.getText();
-					if(msg!=null)connection.sendMessage(msg);;
+					send.doClick();
 				}
 			}
 			@Override public void keyReleased(KeyEvent e) {}
