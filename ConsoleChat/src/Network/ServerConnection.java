@@ -37,64 +37,52 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 				int reply2 = ois.readInt();
 				switch(reply2){
 				case REGISTRATION_EXISTS:
-					disconnect();
 					Logger.logInfo("Tried to register an already existing username");
 					Logger.showWarning("Username already exists");
+					disconnect();
 					break;
 				case LOGIN_APPROVED:
 					Logger.logInfo("Successfully connected to " + socket.getRemoteSocketAddress());
-					setupChat();
+					String[] users = (ois.readUTF()).split(",");
+					serverListener = new NetworkListener(socket, this, "ServerListener", ois);
+					window = new Window_Chat(this);
+					window.refreshUsers(users);
 					break;
 				}
 				break;
 			case INCORRECT_PASSWORD:
-				disconnect();
 				Logger.logInfo("Tried to log in with incorrect password");
 				Logger.showWarning("Incorrect password");
+				disconnect();
 				break;
 			case SERVER_FULL:
-				disconnect();
 				Logger.logInfo("Server is full");
 				Logger.showWarning("Server is full");
+				disconnect();
 				break;
 			case BAD_LOGIN_PACKET:
-				disconnect();
 				Logger.logSevere("Sent a bad packet");
 				Logger.showWarning("Sent a bad packet, seek administrator inmidietly");
+				disconnect();
 				break;
 			case IP_LOCK:
-				disconnect();
 				Logger.logInfo("Connection to server failed, IP locking is enabled");
 				Logger.showWarning("IP locking is enabled on this server");
+				disconnect();
 				break;
 			case LOGIN_APPROVED:
 				Logger.logInfo("Successfully connected to " + socket.getRemoteSocketAddress());
-				setupChat();
+				String[] users = (ois.readUTF()).split(",");
+				serverListener = new NetworkListener(socket, this, "ServerListener", ois);
+				window = new Window_Chat(this);
+				window.refreshUsers(users);
 				break;
 			}
-			ois.close();
 		} catch (UnknownHostException e) {
 			Logger.logError("Could not identify host " + address);
 			e.printStackTrace();
 		} catch (IOException e) {
 			Logger.logSevere("Connection reset for " + address);
-			e.printStackTrace();
-			disconnect();
-		}
-	}
-
-	private void setupChat() {
-		try {
-			String[] users = (String[])ois.readObject();
-			serverListener = new NetworkListener(socket, this, "ServerListener", ois);
-			window = new Window_Chat();
-			window.refreshUsers(users);
-		} catch (ClassNotFoundException e) {
-			Logger.logSevere("Could not cast object to String Array");
-			e.printStackTrace();
-			disconnect();
-		} catch (IOException e) {
-			Logger.logError("Could not read object from server");
 			e.printStackTrace();
 			disconnect();
 		}
@@ -106,9 +94,9 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 	
 	public void disconnect(){
 		try {
-			if(serverListener!=null)serverListener.stop();
 			if(oos!=null)oos.close();
-			socket.close();
+			if(ois!=null)ois.close();
+			if(serverListener!=null)serverListener.stop();
 		} catch (IOException e) {
 			Logger.logError("Could not close the socket for " + socket.getRemoteSocketAddress());
 			e.printStackTrace();
@@ -117,7 +105,7 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 	
 	public void sendMessage(String msg){
 		try {
-			oos.writeObject(msg);
+			oos.writeUTF(msg);
 			oos.flush();
 		} catch (IOException e) {
 			Logger.logError("Could not send data to server");
@@ -126,18 +114,18 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 	}
 
 	@Override
-	public void receiveData(DataPacket data) {
-		String d = data.getString();
-		if(d.startsWith("0000")){
+	public void receiveData(String data) {
+		Logger.logInfo("Performing data analysis");
+		if(data.startsWith("0000")){
 			String msg = "";
-			for(int x = 3; x < d.length(); x++){
-				msg += d.charAt(x);
+			for(int x = 4; x < data.length(); x++){
+				msg += data.charAt(x);
 			}
 			window.write(msg);
-		}else if(d.startsWith("0001")){
+		}else if(data.startsWith("0001")){
 			String msg = "";
-			for(int x = 3; x < d.length(); x++){
-				msg += d.charAt(x);
+			for(int x = 4; x < data.length(); x++){
+				msg += data.charAt(x);
 			}
 			String[] users = msg.split(",");
 			window.refreshUsers(users);

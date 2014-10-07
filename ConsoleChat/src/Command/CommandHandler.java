@@ -33,29 +33,35 @@ public class CommandHandler {
 		if(data.charAt(0)=='/'){
 			String[] cmdstr = data.split(" ");
 			cmdstr[0] = cmdstr[0].split("/")[1];
+			boolean found = false;
 			for(Command c : list){
-				if(c.getCommand().equals(cmdstr[0])){
+				if(c!=null && c.getCommand().equals(cmdstr[0])){
 					int runtime = c.execute(server, clientConnection, cmdstr);
 					switch(runtime){
 					case Command.RAN_SUCCESSFULY:
 						Logger.logInfo("Executed command " + c.getCommand() + " successfuly");
+						found = true;
 						break;
 					case Command.PERMISSION_ERROR:
 						Logger.logInfo(clientConnection.getUser().getUsername() + " tried to use command " + c.getCommand());
 						clientConnection.sendMessage("You do not have permission to use " + c.getCommand());
+						found = true;
 						break;
 					case Command.ARGUMENT_ERROR:
 						Logger.logInfo(clientConnection.getUser().getUsername() + " passed an invalid amount of arguments to command " + c.getCommand());
 						clientConnection.sendMessage("You passed an invalid amount of arguments to command " + c.getCommand() + ", correct usage: " + c.getUsage());
+						found = true;
 						break;
 					case Command.STATE_ERROR:
 						Logger.logSevere("A command state error ocurred");
+						found = true;
 						break;
 					}
 				}
 			}
+			if(!found)clientConnection.sendMessage('\'' + cmdstr[0] + "' is an invalid command");
 		}else{
-			server.sendMessage(new String(data));
+			server.sendMessage(new String((clientConnection.getUser().isAdmin() ? '*' : "") + clientConnection.getUser().getUsername() + " : " + data));
 		}
 	}
 }

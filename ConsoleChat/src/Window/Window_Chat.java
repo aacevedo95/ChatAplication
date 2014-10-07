@@ -16,13 +16,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import Network.ServerConnection;
+
 public class Window_Chat extends Window{
 
+	private ServerConnection connection;
 	private JTextArea area;
 	private JList<String> userList;
 
-	public Window_Chat() {
+	public Window_Chat(ServerConnection sc) {
 		super();
+		connection = sc;
 
 		//Declarations
 		area = new JTextArea(20,40);
@@ -92,7 +96,7 @@ public class Window_Chat extends Window{
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
 					String msg = input.getText();
-					if(msg!=null)write(msg);
+					if(msg!=null)connection.sendMessage(msg);;
 				}
 			}
 			@Override public void keyReleased(KeyEvent e) {}
@@ -113,6 +117,6 @@ public class Window_Chat extends Window{
 	}
 
 	public void write(String msg){
-		area.append(msg);
+		area.append(msg + '\n');
 	}
 }

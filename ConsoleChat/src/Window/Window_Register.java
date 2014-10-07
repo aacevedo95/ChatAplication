@@ -3,6 +3,8 @@ package Window;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,11 +26,11 @@ public class Window_Register extends Window{
 		super();
 		hasResult = false;
 		
-		JButton buttonRegister = new JButton("Register");
-		JLabel labelUsername = new JLabel("Username");
-		JLabel labelPassword = new JLabel("Password");
-		JLabel labelEmail = new JLabel("Email");
-		JLabel labelGroup = new JLabel("Group");
+		final JButton buttonRegister = new JButton("Register");
+		final JLabel labelUsername = new JLabel("Username");
+		final JLabel labelPassword = new JLabel("Password");
+		final JLabel labelEmail = new JLabel("Email");
+		final JLabel labelGroup = new JLabel("Group");
 		final JTextField fieldUsername = new JTextField(TEXT_FIELD_LENGTH);
 		fieldUsername.setText(ls.getUsername());
 		final JPasswordField fieldPassword = new JPasswordField(TEXT_FIELD_LENGTH);
@@ -63,6 +65,19 @@ public class Window_Register extends Window{
 				hasResult = true;
 			}
 		});
+		KeyListener tmp = new KeyListener(){
+			@Override public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					buttonRegister.doClick();
+				}
+			}
+			@Override public void keyReleased(KeyEvent e) {}
+			@Override public void keyTyped(KeyEvent e) {}
+		};
+		fieldUsername.addKeyListener(tmp);
+		fieldPassword.addKeyListener(tmp);
+		fieldEmail.addKeyListener(tmp);
+		fieldGroup.addKeyListener(tmp);
 		
 		JPanel dataPanel = new JPanel();{
 			dataPanel.setLayout(new FlowLayout());

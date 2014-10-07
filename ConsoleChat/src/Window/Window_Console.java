@@ -10,8 +10,6 @@ import java.io.PrintStream;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import Utility.Logger;
-
 public class Window_Console extends Window{
 	
 	private JTextArea area;
@@ -22,7 +20,7 @@ public class Window_Console extends Window{
 		//
 		frame.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){
-				Logger.disable();
+				Main.Main.shutdown();
 			}
 		});
 		//

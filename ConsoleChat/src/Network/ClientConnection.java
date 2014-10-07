@@ -52,7 +52,8 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 				registerClient(s);
 				if(user==null){
 					Logger.logInfo("Client reponded with an invalid registration, ending connection");
-					disconnect();
+					oos.writeInt(BAD_LOGIN_PACKET);
+					oos.flush();
 					return;
 				}
 			}
@@ -60,7 +61,7 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 				Logger.logInfo("Client '" + ls.getUsername() + "' was logged in successfuly");
 				oos.writeInt(LOGIN_APPROVED);
 				oos.flush();
-				oos.writeObject(server.getUserList());
+				oos.writeUTF(server.getUserList());
 				oos.flush();
 				isValid = true;
 			}else{
@@ -105,7 +106,6 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 					Logger.logInfo(nu.getUsername() + " already exists, cancelling registration");
 					oos.writeInt(REGISTRATION_EXISTS);
 					oos.flush();
-					disconnect();
 				}
 			}
 		} catch (IOException e) {
@@ -124,7 +124,6 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 			if(user!=null)user.setOnline(false);
 			if(oos!=null)oos.close();
 			if(ois!=null)ois.close();
-			socket.close();
 		} catch (IOException e) {
 			Logger.logError("Could not close connection for " + getFormalUsername());
 		}
@@ -150,9 +149,9 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		return connectTime;
 	}
 	
-	public void write(DataPacket data){
+	public void write(String data){
 		try {
-			oos.writeObject(data.getString());
+			oos.writeUTF(data);
 			oos.flush();
 		} catch (IOException e) {
 			Logger.logError("Could not send data to " + getFormalUsername());
@@ -161,15 +160,12 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 	}
 	
 	public void sendMessage(String msg){
-		DataPacket packet = new DataPacket();
-		packet.setString("0000" + msg);
-		write(packet);
+		write("0000" + msg);
 	}
 
 	@Override
-	public void receiveData(DataPacket data) {
-		String d = data.getString();
-		server.getCommandHandler().process(server, this, d);
+	public void receiveData(String data) {
+		server.getCommandHandler().process(server, this, data);
 	}
 
 	public boolean isValid() {

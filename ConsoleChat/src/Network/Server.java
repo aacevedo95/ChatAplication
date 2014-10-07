@@ -56,11 +56,12 @@ public class Server extends NetworkingClass{
 	
 	public void stop(){
 		Logger.logInfo("Stopping server");
-		ncl.stop();
-		for(ClientConnection c : clientList){
-			c.disconnect();
-		}
 		try {
+			ncl.stop();
+			for(ClientConnection c : clientList){
+				c.disconnect();
+			}
+			userHandler.save();
 			ss.close();
 		} catch (IOException e) {
 			Logger.logError("Could not shutdown server socket");
@@ -98,9 +99,12 @@ public class Server extends NetworkingClass{
 		return clientList;
 	}
 	
-	public String[] getUserList(){
-		String[] tmp = new String[clients];
-		for(int x = 0; x < clients; x++)tmp[x]=clientList[x].getUser().getUsername();
+	public String getUserList(){
+		String tmp = "";
+		for(int x = 0; x < clients; x++){
+			tmp+=clientList[x].getUser().getUsername();
+			if(x!=clients-1)tmp+=',';
+		}
 		return tmp;
 	}
 	

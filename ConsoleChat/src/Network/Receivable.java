@@ -2,5 +2,5 @@ package Network;
 
 public interface Receivable {
 	
-	public void receiveData(DataPacket data);
+	public void receiveData(String data);
 }

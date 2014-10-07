@@ -39,14 +39,10 @@ public class NetworkListener implements Runnable{
 
 	@Override
 	public void run() {
+		String msg;
 		while(running){
-			DataPacket data;
 			try {
-				data = (DataPacket)ois.readObject();
-				if(data!=null)obj.receiveData(data);
-			} catch (ClassNotFoundException e) {
-				Logger.logSevere("Class not found in network listener " + threadName);
-				e.printStackTrace();
+				if((msg = ois.readUTF()) != null)obj.receiveData(msg);
 			} catch (IOException e) {
 				Logger.logError("IO Exception in network listener " + threadName);
 				e.printStackTrace();
