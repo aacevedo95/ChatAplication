@@ -1,7 +1,6 @@
 package User;
 
 import java.io.Serializable;
-import java.util.Properties;
 import Utility.Logger;
 import Window.Window_Register;
 
@@ -12,11 +11,6 @@ public class RegistrationSession implements Serializable{
 	private String password;
 	private String email;
 	private String group;
-	private Properties system;
-	
-	public RegistrationSession(){
-		system = System.getProperties();
-	}
 	
 	public String getUsername() {
 		return username;
@@ -49,13 +43,9 @@ public class RegistrationSession implements Serializable{
 	public void setGroup(String group) {
 		this.group = group;
 	}
-
-	public Properties getSystem() {
-		return system;
-	}
 	
-	public static RegistrationSession showRegistration(){
-		Window_Register wr = new Window_Register();
+	public static RegistrationSession showRegistration(LoginSession ls){
+		Window_Register wr = new Window_Register(ls);
 		while(!wr.hasResult()){
 			try {
 				Thread.sleep(100);

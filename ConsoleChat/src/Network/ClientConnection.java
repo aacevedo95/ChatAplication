@@ -1,6 +1,5 @@
 package Network;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,7 +15,8 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 	private Server server;
 	private Socket socket;
 	private NetworkListener listener;
-	private DataOutputStream dos;
+	private ObjectOutputStream oos;
+	private ObjectInputStream ois;
 	private UserData user;
 	private Properties properties;
 	private long connectTime;
@@ -28,98 +28,110 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		setSocket(s);
 		connectTime = System.currentTimeMillis();
 		try {
-			dos = new DataOutputStream(socket.getOutputStream());
+			oos = new ObjectOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			Logger.logError("Could not create a data stream for " + getFormalUsername());
+			e.printStackTrace();
 		}
-		user = getLoginDetails(s);
-		if(isValid)listener = new NetworkListener(socket, this, "ClientListener-" + user.getUsername());
+		getLoginDetails(s);
+		if(isValid)try {
+				listener = new NetworkListener(socket, this, "ClientListener-" + getFormalUsername(), ois);
+			} catch (IOException e) {
+				Logger.logInfo("Could not create listener for connection " + getFormalUsername());
+				e.printStackTrace();
+			}
 	}
 	
-	private UserData getLoginDetails(Socket s){
+	private void getLoginDetails(Socket s){
 		try {
-			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+			 ois = new ObjectInputStream(s.getInputStream());
 			LoginSession ls = (LoginSession)ois.readObject();
-			UserData u = server.getUserHandler().searchByUsername(ls.getUsername());
-			if(u==null){
-				u = registerClient(s);
-				if(u==null){
-					ois.close();
-					s.close();
-					return null;
+			user = server.getUserHandler().searchByUsername(ls.getUsername());
+			if(user==null){
+				Logger.logInfo("User was not found, starting registration process");
+				registerClient(s);
+				if(user==null){
+					Logger.logInfo("Client reponded with an invalid registration, ending connection");
+					disconnect();
+					return;
 				}
 			}
-			if(u.getPassword().equals(ls.getPassword())){
-				dos.write(LOGIN_APPROVED);
-				ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+			if(user.getPassword().equals(ls.getPassword())){
+				Logger.logInfo("Client '" + ls.getUsername() + "' was logged in successfuly");
+				oos.writeInt(LOGIN_APPROVED);
+				oos.flush();
 				oos.writeObject(server.getUserList());
+				oos.flush();
 				isValid = true;
 			}else{
-				dos.write(INCORRECT_PASSWORD);
+				Logger.logInfo("Client attempted to access account '" + ls.getUsername() + "' with the wrong password");
+				oos.writeInt(INCORRECT_PASSWORD);
+				oos.flush();
 				s.close();
 			}
 		} catch (IOException e) {
 			Logger.logError("Could not create a login session input stream");
+			e.printStackTrace();
 			try {
 				s.close();
 			} catch (IOException e1) {
 				Logger.logError("Could not close socket for " + s.getRemoteSocketAddress());
+				e.printStackTrace();
 			}
 		} catch (ClassNotFoundException e) {
 			Logger.logSevere("LogginSession class not found");
+			e.printStackTrace();
 		}
-		return null;
 	}
 	
-	private UserData registerClient(Socket s){
+	private void registerClient(Socket s){
 		try {
-			DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-			dos.write(REGISTRATION_REQUIRED);
-			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+			oos.writeInt(REGISTRATION_REQUIRED);
+			oos.flush();
+			Logger.logInfo("Sent registration request");
 			RegistrationSession nu = (RegistrationSession)ois.readObject();
-			properties = nu.getSystem();
+			Logger.logInfo("Received registration response");
 			if(nu!=null){
 				UserData tmp = server.getUserHandler().searchByUsername(nu.getUsername());
 				if(tmp==null){
 					Logger.logInfo("Creating new user " + nu.getUsername());
-					UserData ud = new UserData();
-					ud.setUsername(nu.getUsername());
-					ud.setPassword(nu.getPassword());
-					ud.setEmail(nu.getEmail());
-					ud.setGroup(nu.getGroup());
-					ud.setJoinIp(s.getRemoteSocketAddress().toString());
-					return ud;
+					user = new UserData();
+					user.setUsername(nu.getUsername());
+					user.setPassword(nu.getPassword());
+					user.setEmail(nu.getEmail());
+					user.setGroup(nu.getGroup());
+					user.setJoinIp(s.getRemoteSocketAddress().toString());
 				}else{
 					Logger.logInfo(nu.getUsername() + " already exists, cancelling registration");
-					dos.write(REGISTRATION_EXISTS);
+					oos.writeInt(REGISTRATION_EXISTS);
+					oos.flush();
+					disconnect();
 				}
 			}
-			Logger.logInfo("Could not register new user @ " + s.getRemoteSocketAddress());
-			dos.close();
-			ois.close();
-			s.close();
 		} catch (IOException e) {
-			Logger.logInfo("Could not create socket stream durring registration for " + s.getRemoteSocketAddress());
+			Logger.logSevere("Connection reset for '" + s.getRemoteSocketAddress() + '\'');
+			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			Logger.logSevere("Could not find RegistrationSession class");
+			e.printStackTrace();
 		}
-		return null;
 	}
 	
 	public void disconnect(){
 		Logger.logInfo("Disconnecting " + getFormalUsername());
-		listener.stop();
-		user.setOnline(false);
 		try {
-			dos.close();
+			if(listener!=null)listener.stop();
+			if(user!=null)user.setOnline(false);
+			if(oos!=null)oos.close();
+			if(ois!=null)ois.close();
 			socket.close();
 		} catch (IOException e) {
-			Logger.logError("Could not close socket for " + getFormalUsername());
+			Logger.logError("Could not close connection for " + getFormalUsername());
 		}
 	}
 	
 	private String getFormalUsername(){
-		return String.format("'%s'(%s", user.getUsername(), socket.getRemoteSocketAddress().toString());
+		return '('+user.getUsername() +")["+user.getUserid()+"]{"+socket.getRemoteSocketAddress()+'}';
 	}
 
 	public Socket getSocket() {
@@ -138,25 +150,33 @@ public class ClientConnection extends NetworkingClass implements Receivable{
 		return connectTime;
 	}
 	
-	public void write(String msg){
+	public void write(DataPacket data){
 		try {
-			dos.write(msg.getBytes());
+			oos.writeObject(data.getString());
+			oos.flush();
 		} catch (IOException e) {
 			Logger.logError("Could not send data to " + getFormalUsername());
+			e.printStackTrace();
 		}
 	}
 	
 	public void sendMessage(String msg){
-		write("0000" + msg.getBytes());
+		DataPacket packet = new DataPacket();
+		packet.setString("0000" + msg);
+		write(packet);
 	}
 
 	@Override
-	public void receiveData(byte[] data) {
-		String d = new String(data);
+	public void receiveData(DataPacket data) {
+		String d = data.getString();
 		server.getCommandHandler().process(server, this, d);
 	}
 
 	public boolean isValid() {
 		return isValid;
+	}
+
+	public Properties getProperties() {
+		return properties;
 	}
 }

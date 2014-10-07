@@ -1,7 +1,5 @@
 package Network;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,25 +14,27 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 	
 	private Socket socket;
 	private NetworkListener serverListener;
-	private DataOutputStream dos;
 	private ObjectOutputStream oos;
+	private ObjectInputStream ois;
 	private Window_Chat window;
 
 	public ServerConnection(String address) {
 		try {
 			socket = new Socket(address, PORT);
-			DataInputStream dis = new DataInputStream(socket.getInputStream());
-			dos = new DataOutputStream(socket.getOutputStream());
 			oos = new ObjectOutputStream(socket.getOutputStream());
-			Logger.logInfo("Sending login session to server");
-			oos.writeObject(LoginSession.showLoginScreen(socket.getRemoteSocketAddress().toString()));
-			int reply = dis.read();
+			ois = new ObjectInputStream(socket.getInputStream());
+			LoginSession ls = LoginSession.showLoginScreen(address);
+			oos.writeObject(ls);
+			oos.flush();
+			Logger.logInfo("Sent login session to server");
+			int reply = ois.readInt();
 			Logger.logInfo("Server replied with id " + reply);
 			switch(reply){
 			case REGISTRATION_REQUIRED:
-				RegistrationSession rs = RegistrationSession.showRegistration();
+				RegistrationSession rs = RegistrationSession.showRegistration(ls);
 				oos.writeObject(rs);
-				int reply2 = dis.read();
+				oos.flush();
+				int reply2 = ois.readInt();
 				switch(reply2){
 				case REGISTRATION_EXISTS:
 					disconnect();
@@ -72,26 +72,30 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 				setupChat();
 				break;
 			}
+			ois.close();
 		} catch (UnknownHostException e) {
 			Logger.logError("Could not identify host " + address);
+			e.printStackTrace();
 		} catch (IOException e) {
-			Logger.logError("Encountered an I/O error while attempting to connect to " + address);
+			Logger.logSevere("Connection reset for " + address);
+			e.printStackTrace();
+			disconnect();
 		}
 	}
 
 	private void setupChat() {
 		try {
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			String[] users = (String[])ois.readObject();
-			ois.close();
-			serverListener = new NetworkListener(socket, this, "ServerListener");
+			serverListener = new NetworkListener(socket, this, "ServerListener", ois);
 			window = new Window_Chat();
 			window.refreshUsers(users);
 		} catch (ClassNotFoundException e) {
 			Logger.logSevere("Could not cast object to String Array");
+			e.printStackTrace();
 			disconnect();
 		} catch (IOException e) {
 			Logger.logError("Could not read object from server");
+			e.printStackTrace();
 			disconnect();
 		}
 	}
@@ -101,28 +105,29 @@ public class ServerConnection extends NetworkingClass implements Receivable{
 	}
 	
 	public void disconnect(){
-		sendMessage("/disconnect");
-		serverListener.stop();
 		try {
-			dos.close();
-			oos.close();
+			if(serverListener!=null)serverListener.stop();
+			if(oos!=null)oos.close();
 			socket.close();
 		} catch (IOException e) {
 			Logger.logError("Could not close the socket for " + socket.getRemoteSocketAddress());
+			e.printStackTrace();
 		}
 	}
 	
 	public void sendMessage(String msg){
 		try {
-			dos.write(msg.getBytes());
+			oos.writeObject(msg);
+			oos.flush();
 		} catch (IOException e) {
 			Logger.logError("Could not send data to server");
+			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void receiveData(byte[] data) {
-		String d = new String(data);
+	public void receiveData(DataPacket data) {
+		String d = data.getString();
 		if(d.startsWith("0000")){
 			String msg = "";
 			for(int x = 3; x < d.length(); x++){

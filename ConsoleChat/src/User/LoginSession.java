@@ -1,7 +1,6 @@
 package User;
 
 import java.io.Serializable;
-import java.util.Properties;
 import Utility.Logger;
 import Window.Window_Login;
 
@@ -10,11 +9,6 @@ public class LoginSession implements Serializable{
 	
 	private String username;
 	private String password;
-	private Properties system;
-	
-	public LoginSession(){
-		system = System.getProperties();
-	}
 	
 	public String getUsername() {
 		return username;
@@ -30,10 +24,6 @@ public class LoginSession implements Serializable{
 	
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public Properties getSystem() {
-		return system;
 	}
 	
 	public static LoginSession showLoginScreen(String address){

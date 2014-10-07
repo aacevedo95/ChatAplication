@@ -3,12 +3,15 @@ package Window;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import User.LoginSession;
 import User.RegistrationSession;
 import Utility.Logger;
 
@@ -17,7 +20,7 @@ public class Window_Register extends Window{
 	private RegistrationSession rs;
 	private boolean hasResult;
 	
-	public Window_Register(){
+	public Window_Register(LoginSession ls){
 		super();
 		hasResult = false;
 		
@@ -27,6 +30,7 @@ public class Window_Register extends Window{
 		JLabel labelEmail = new JLabel("Email");
 		JLabel labelGroup = new JLabel("Group");
 		final JTextField fieldUsername = new JTextField(TEXT_FIELD_LENGTH);
+		fieldUsername.setText(ls.getUsername());
 		final JPasswordField fieldPassword = new JPasswordField(TEXT_FIELD_LENGTH);
 		final JTextField fieldEmail = new JTextField(TEXT_FIELD_LENGTH);
 		final JTextField fieldGroup = new JTextField(TEXT_FIELD_LENGTH);

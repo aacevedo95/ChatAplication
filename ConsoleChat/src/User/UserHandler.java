@@ -26,22 +26,26 @@ public class UserHandler implements Serializable{
 	public UserData searchById(String id){
 		Logger.logInfo("Searching for id " + id);
 		for(int x = 0; x < users; x++)if(list[x].getUserid().equals(id))return list[x];
+		Logger.logInfo("Could not find user id " + id);
 		return null;
 	}
 	
 	public UserData searchByUsername(String un){
 		Logger.logInfo("Searching for user " + un);
 		for(int x = 0; x < users; x++)if(list[x].getUsername().equals(un))return list[x];
+		Logger.logInfo("Could not find user " + un);
 		return null;
 	}
 	
 	public int searchIndexById(String id){
 		Logger.logInfo("Searching index for id " + id);
 		for(int x = 0; x < users; x++)if(list[x].getUserid().equals(id))return x;
+		Logger.logInfo("Could not find user id " + id);
 		return -1;
 	}
 	
 	public void delete(int index){
+		Logger.logInfo("Deleting the user at position " + index);
 		for(int x = index; x < users-1; x++)list[x]=list[x+1];
 		list[users-1]=null;
 		users--;

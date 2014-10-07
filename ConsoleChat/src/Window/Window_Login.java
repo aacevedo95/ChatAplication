@@ -3,11 +3,14 @@ package Window;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
 import User.LoginSession;
 import Utility.Logger;
 
@@ -24,7 +27,7 @@ public class Window_Login extends Window{
 		final JLabel labelUsername = new JLabel("Username");
 		final JLabel labelPassword = new JLabel("Password");
 		final JTextField fieldUsername = new JTextField(TEXT_FIELD_LENGTH);
-		final JTextField fieldPassword = new JTextField(TEXT_FIELD_LENGTH);
+		final JPasswordField fieldPassword = new JPasswordField(TEXT_FIELD_LENGTH);
 		final JButton buttonLogin = new JButton("Login");
 		
 		JPanel panelData = new JPanel();{
@@ -52,7 +55,7 @@ public class Window_Login extends Window{
 					Logger.showWarning("Username must not be shorter than 6 characters");
 					return;
 				}
-				String password = fieldPassword.getText();
+				String password = new String(fieldPassword.getPassword());
 				if(password.length()<4){
 					Logger.showWarning("Password must not be shorter than 4 characters");
 					return;

@@ -7,11 +7,13 @@ import Utility.Logger;
 public class Main{
 	
 	public static boolean nogui = false;
+	public static boolean serverHost = false;
 	
 	public static void main(String[] a) throws InterruptedException{
 		if(a.length>0){
 			System.out.println(a[0]);
 			if(a[0].equals("server")){
+				serverHost = true;
 				Server server;
 				if(a.length > 1 && a[1].equals("nogui")){
 					nogui = true;

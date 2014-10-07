@@ -42,11 +42,11 @@ public class CommandHandler {
 						break;
 					case Command.PERMISSION_ERROR:
 						Logger.logInfo(clientConnection.getUser().getUsername() + " tried to use command " + c.getCommand());
-						clientConnection.write("You do not have permission to use " + c.getCommand());
+						clientConnection.sendMessage("You do not have permission to use " + c.getCommand());
 						break;
 					case Command.ARGUMENT_ERROR:
 						Logger.logInfo(clientConnection.getUser().getUsername() + " passed an invalid amount of arguments to command " + c.getCommand());
-						clientConnection.write("You passed an invalid amount of arguments to command " + c.getCommand() + ", correct usage: " + c.getUsage());
+						clientConnection.sendMessage("You passed an invalid amount of arguments to command " + c.getCommand() + ", correct usage: " + c.getUsage());
 						break;
 					case Command.STATE_ERROR:
 						Logger.logSevere("A command state error ocurred");

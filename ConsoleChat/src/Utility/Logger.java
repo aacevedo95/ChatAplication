@@ -14,14 +14,17 @@ public class Logger{
 	private static File log;
 	private static PrintWriter printWriter;
 	private static Window_Console console;
+	private static String prefix;
+	private static boolean consoleEnabled = true;
 	private static boolean loggerAlive = false;
-	private static boolean saveLogs = false;
+	private static boolean saveLogs = true;
 
 	private static void setup(){
+		prefix = Main.Main.serverHost ? "server" : "client";
 		loggerAlive = true;
 		if(saveLogs){
 			if(!new File("logs").exists())new File("logs").mkdir();
-			log = new File("logs/log " + getDateAndTimeLogName() + ".log");
+			log = new File("logs/" + prefix + ' ' + getDateAndTimeLogName() + ".log");
 			try {
 				log.createNewFile();
 			} catch (IOException e) {
@@ -34,6 +37,20 @@ public class Logger{
 			}
 		}
 		setupConsole();
+	}
+	
+	public static void disable(){
+		close();
+		console.setVisible(false);
+		console.getFrame().dispose();
+		console = null;
+		consoleEnabled = false;
+		/*
+		 * 
+		 * REMOVE THE FOLLOWING LINE ON RELEASE
+		 * 
+		 */
+		System.exit(0);
 	}
 
 	public static void setupConsole(){
@@ -58,6 +75,7 @@ public class Logger{
 	}
 
 	private static void writeToLog(String msg){
+		if(!consoleEnabled)return;
 		if(!loggerAlive)setup();
 		if(saveLogs)printWriter.println(getDateAndTime() + " " + msg);
 		System.out.println(getDateAndTime() + " " + msg);

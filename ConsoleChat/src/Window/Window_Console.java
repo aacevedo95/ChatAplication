@@ -2,11 +2,15 @@ package Window;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import Utility.Logger;
 
 public class Window_Console extends Window{
 	
@@ -15,6 +19,13 @@ public class Window_Console extends Window{
 	public Window_Console() {
 		super();
 		frame.setTitle("Console log");
+		//
+		frame.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent e){
+				Logger.disable();
+			}
+		});
+		//
 		area = new JTextArea();
 		area.setEditable(false);
 		area.setBackground(Color.black);
@@ -25,7 +36,7 @@ public class Window_Console extends Window{
 		frame.pack();
 		PrintStream out = new PrintStream(new SystemTextAreaOutputStream(area));
 		System.setOut(out);
-		System.setErr(null);
+		System.setErr(out);
 		setVisible(true);
 		center();
 	}
